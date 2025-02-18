@@ -11,28 +11,24 @@ using System.Reflection;
 
 namespace MCPSharp
 {
-    class DuplexPipe : IDuplexPipe 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+    internal class DuplexPipe(PipeReader reader, PipeWriter writer) : IDuplexPipe
     {
-        private readonly PipeReader _reader;
-        private readonly PipeWriter _writer;
-        public DuplexPipe(PipeReader reader, PipeWriter writer) 
-        {
-            var r = PipeReader.Create(Console.OpenStandardInput());
-            _reader = reader;
-            _writer = writer;
-        }
+        private readonly PipeReader _reader = reader;
+        private readonly PipeWriter _writer = writer;
+
         public PipeReader Input => _reader;
         public PipeWriter Output => _writer;
     }
     /// <summary>
     /// Main class for the MCP server.
     /// </summary>
-    public partial class MCPServer 
+    public class MCPServer
     {
         private readonly Dictionary<string, ToolHandler<object>> tools = [];
         private readonly JsonRpc _rpc;
         private Implementation implementation;
-        private Stream StandardOutput;
+        private readonly Stream StandardOutput;
 
         /// <summary>
         /// The output of Console.WriteLine() will be redirected here. defautls to null, currently no way to change this. 
@@ -46,13 +42,16 @@ namespace MCPSharp
         {
             StandardOutput = Console.OpenStandardOutput();
             Console.SetOut(RedirectedOutput);
-            var pipe = new DuplexPipe(PipeReader.Create(Console.OpenStandardInput()), PipeWriter.Create(StandardOutput)); 
+            var pipe = new DuplexPipe(PipeReader.Create(Console.OpenStandardInput()), PipeWriter.Create(StandardOutput));
             _rpc = new JsonRpc(new NewLineDelimitedMessageHandler(pipe, new SystemTextJsonFormatter()), this);
-
-            Console.WriteLine("MCP Server started and console redirected.");
         }
 
-        
+        /// <summary>
+        /// Constructor for the MCP server.
+        /// </summary>
+        /// <param name="outputWriter">a TextWriter object where any Console.Write() calls will go</param>
+        public MCPServer(TextWriter outputWriter) : this() => RedirectedOutput = outputWriter; 
+
         /// <summary>
         /// Starts the MCP Server, Registers all tools and starts listening for requests.
         /// </summary>
@@ -84,57 +83,45 @@ namespace MCPSharp
         /// <param name="clientInfo"></param>
         /// <returns></returns>
         [JsonRpcMethod("initialize")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public InitializeResult Initialize(string protocolVersion, ClientCapabilities capabilities, Implementation clientInfo)
         {
-            return new InitializeResult { 
-                ProtocolVersion = protocolVersion, 
-                Capabilities = new ServerCapabilities
-                { 
-                    Tools = new() {{"listChaged", false}}, 
-                    Resources = [], 
-                    Prompts = [], 
+            return new InitializeResult(
+                protocolVersion, 
+                new ServerCapabilities {
+                    Tools = new() { { "listChaged", false } },
+                    Resources = [],
+                    Prompts = [],
                     Sampling = [],
-                    Roots = []
-                },
-                ServerInfo = implementation
-            };
+                    Roots = []}, 
+                implementation);
         }
 
         [JsonRpcMethod("notifications/initialized")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-        public static void Initialized(){ }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
-
+        public static void Initialized() { }
 
         [JsonRpcMethod("tools/list")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public ToolsListResult ListTools()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             var toolsList = tools.Values.Select(t => t.GetToolDefinition()).ToList();
             return new ToolsListResult { Tools = toolsList };
         }
 
+        [JsonRpcMethod("resources/list")] public ResourcesListResult ListResources() => new() { Resources = [] };
+        [JsonRpcMethod("resources/templates/list")] public ResourceTemplateListResult ListResourceTemplates() => new() { Templates = [] };
 
         [JsonRpcMethod("tools/call", UseSingleObjectParameterDeserialization = true)]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public async Task<CallToolResult> CallToolAsync(ToolCallParameters parameters)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
-
             if (!tools.TryGetValue(parameters.Name, out var toolHandler))
             {
                 //Log.Error($"Tool {parameters.Name} not found");
                 return new CallToolResult { IsError = true, Content = [new TextContent { Text = $"Tool {parameters.Name} not found" }] };
-
             }
 
             return await toolHandler.HandleAsync(parameters.Arguments);
         }
 
-
-        private void RegisterTool(Type type) //where T : class, new()
+        private void RegisterTool(Type type)
         {
             var instance = Activator.CreateInstance(type);
             var toolAttr = type.GetCustomAttribute<McpToolAttribute>();
@@ -157,13 +144,15 @@ namespace MCPSharp
                     p => p.Name!,
                     p => new ParameterSchema
                     {
-                        Type = p.ParameterType switch {
+                        Type = p.ParameterType switch
+                        {
                             Type t when t == typeof(string) => "string",
                             Type t when t == typeof(int) || t == typeof(double) || t == typeof(float) => "number",
                             Type t when t == typeof(bool) => "boolean",
                             Type t when t.IsArray => "array",
                             Type t when t == typeof(DateTime) => "string",
-                            _ => "object"},
+                            _ => "object"
+                        },
                         Description = p.GetXmlDocumentation() ?? p.GetCustomAttribute<McpParameterAttribute>()?.Description ?? "description not set",
                         Required = p.GetCustomAttribute<McpParameterAttribute>()?.Required ?? false,
                     }
@@ -185,6 +174,6 @@ namespace MCPSharp
             }
         }
 
-        private void Start()=>_rpc.StartListening();   
+        private void Start() => _rpc.StartListening();
     }
 }

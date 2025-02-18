@@ -60,11 +60,11 @@ namespace MCPSharp.Core
                 return new CallToolResult
                 {
                     IsError = true,
-                    Content = new[]
-                    {
+                    Content =
+                    [
                         new TextContent { Text = $"{e.Message}" },
                         new TextContent { Text = $"StackTrace:\n{string.Join("\n", stackTrace)}" }
-                    }
+                    ]
                 };
             }
         }

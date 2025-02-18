@@ -1,15 +1,20 @@
 ﻿namespace MCPSharp
 {
+    /// <summary>
+    /// Attribute to mark a class as an MCP tool. 
+    /// </summary>
+    /// <param name="name">The name of the tool. If not provided, the class name will be used.</param>
+    /// <param name="description">A description of the tool.</param>
     [AttributeUsage(AttributeTargets.Method)]
-    public class McpFunctionAttribute : Attribute
+    public class McpFunctionAttribute(string name = null, string description = null) : Attribute
     {
-        public string? Name { get; set; }
-        public string? Description { get; set; }
-
-        public McpFunctionAttribute(string? name = null, string? description = null)
-        {
-            Name = name;
-            Description = description;
-        }
+        /// <summary>
+        /// The name of the tool. If not provided, the class name will be used.
+        /// </summary>
+        public string Name { get; set; } = name;
+        /// <summary>
+        /// A description of the tool.
+        /// </summary>
+        public string Description { get; set; } = description;
     }
 }

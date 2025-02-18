@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+using System.Text.Json.Serialization;
 
 namespace MCPSharp.Model.Parameters
 {
@@ -14,3 +15,5 @@ namespace MCPSharp.Model.Parameters
         public MetaData Meta { get; set; }
     }
 }
+
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member

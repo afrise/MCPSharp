@@ -1,4 +1,6 @@
-﻿using MCPSharp.Model.Schemas;
+﻿#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
+using MCPSharp.Model.Schemas;
 using System.Text.Json.Serialization;
 
 namespace MCPSharp.Model
@@ -17,3 +19,4 @@ namespace MCPSharp.Model
     }
 
 }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member

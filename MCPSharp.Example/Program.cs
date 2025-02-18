@@ -33,7 +33,12 @@ namespace MCPSharp.Example
         [McpFunction]
         public static string AddComplex(ComplicatedObject obj) => $"Name: {obj.Name}, Age: {obj.Age}, Hobbies: {string.Join(", ", obj.Hobbies)}";
 
-        [McpFunction("throw_exception", "throws an exception - for ensuring we handle them gracefully")]
+        /// <summary>
+        /// throws an exception - for ensuring we handle them gracefully
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        [McpFunction("throw_exception")]
         public static string Exception() => throw new Exception("This is an exception");
     }
 
@@ -42,8 +47,11 @@ namespace MCPSharp.Example
     /// </summary>
     public class ComplicatedObject()
     {
-        public string Name { get; set; }
-        public int Age { get; set; }
-        public string[] Hobbies { get; set; }
+        /// <summary>The name of the object</summary>
+        public string Name { get; set; } = "";
+        /// <summary>The age of the object</summary>
+        public int Age { get; set; } = 0;
+        /// <summary>The hobbies of the object</summary>
+        public string[] Hobbies { get; set; } = [];
     }
 }

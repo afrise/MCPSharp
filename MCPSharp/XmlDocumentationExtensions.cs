@@ -5,7 +5,7 @@ namespace MCPSharp
 {
     internal static class XmlDocumentationExtensions
     {
-        public static string? GetXmlDocumentation(this MemberInfo member)
+        public static string GetXmlDocumentation(this MemberInfo member)
         {
             try
             {
@@ -34,7 +34,7 @@ namespace MCPSharp
             }
         }
 
-        public static string? GetXmlDocumentation(this ParameterInfo parameter)
+        public static string GetXmlDocumentation(this ParameterInfo parameter)
         {
             try
             {
