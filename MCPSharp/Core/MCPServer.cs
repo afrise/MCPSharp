@@ -32,14 +32,24 @@ namespace MCPSharp
         private readonly Dictionary<string, ToolHandler<object>> tools = [];
         private readonly JsonRpc _rpc;
         private Implementation implementation;
+        private Stream StandardOutput;
+
+        /// <summary>
+        /// The output of Console.WriteLine() will be redirected here. defautls to null, currently no way to change this. 
+        /// </summary>
+        public TextWriter RedirectedOutput = TextWriter.Null;
 
         /// <summary>
         /// Constructor for the MCP server.
         /// </summary>
         public MCPServer()
         {
-            var pipe = new DuplexPipe(PipeReader.Create(Console.OpenStandardInput()), PipeWriter.Create(Console.OpenStandardOutput())); 
+            StandardOutput = Console.OpenStandardOutput();
+            Console.SetOut(RedirectedOutput);
+            var pipe = new DuplexPipe(PipeReader.Create(Console.OpenStandardInput()), PipeWriter.Create(StandardOutput)); 
             _rpc = new JsonRpc(new NewLineDelimitedMessageHandler(pipe, new SystemTextJsonFormatter()), this);
+
+            Console.WriteLine("MCP Server started and console redirected.");
         }
 
         
@@ -49,6 +59,7 @@ namespace MCPSharp
         /// <returns></returns>
         public static async Task StartAsync(string serverName, string version)
         {
+
             var server = new MCPServer
             {
                 implementation = new Implementation { Name = serverName, Version = version }
