@@ -2,14 +2,17 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="297mm"
+   width="148mm"
    height="148mm"
-   viewBox="0 0 297 148"
+   viewBox="0 0 148 148"
    version="1.1"
    id="svg5"
    xml:space="preserve"
    inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
    sodipodi:docname="banner.svg"
+   inkscape:export-filename="MCPSharp\icon.png"
+   inkscape:export-xdpi="21.967569"
+   inkscape:export-ydpi="21.967569"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -25,8 +28,8 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="1"
-     inkscape:cx="532"
-     inkscape:cy="297"
+     inkscape:cx="286"
+     inkscape:cy="283"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -41,10 +44,10 @@
        id="rect7711"
        width="297.00067"
        height="147.99896"
-       x="9.649073e-05"
+       x="-75.670784"
        y="0.00061059895" /><g
        id="g9580"
-       transform="matrix(0.92347801,0,0,0.92347801,1.1894854,5.6474885)"><path
+       transform="matrix(0.92347801,0,0,0.92347801,-74.481388,5.6474885)"><path
          sodipodi:type="star"
          style="fill:#404040;fill-opacity:0.5625;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:3.5"
          id="path1518"
@@ -80,7 +83,8 @@
          transform="matrix(0.43272199,0,0,0.43272199,64.653297,-37.467004)" /></g><g
        aria-label="[MCPSharp]"
        id="text1574"
-       style="font-size:25.4px;font-family:'Cascadia Code';-inkscape-font-specification:'Cascadia Code';fill:#4ec9b0;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:3.5"><path
+       style="font-size:25.4px;font-family:'Cascadia Code';-inkscape-font-specification:'Cascadia Code';fill:#4ec9b0;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:3.5"
+       transform="translate(-75.670874)"><path
          d="M 79.774408,83.736446 V 60.816915 h 2.480469 v 22.919531 z m 2.232422,0 V 81.38 h 5.531445 v 2.356446 z m 0,-20.563086 v -2.356445 h 5.531445 v 2.356445 z"
          style="fill:#b3b3b3"
          id="path10189" /><path
@@ -113,7 +117,8 @@
          id="path10207" /></g><g
        aria-label="Model Context Protocol"
        id="text9636"
-       style="font-size:8.46667px;font-family:'Cascadia Code';-inkscape-font-specification:'Cascadia Code';fill:#2c8f7b;stroke:#2d1650;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:3.5"><path
+       style="font-size:8.46667px;font-family:'Cascadia Code';-inkscape-font-specification:'Cascadia Code';fill:#2c8f7b;stroke:#2d1650;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:3.5"
+       transform="translate(-75.670874)"><path
          d="m 97.340268,93.04017 0.124024,-0.950846 h 0.04961 l 0.669727,-2.521811 h 0.587045 v 1.041797 h -0.239779 l -0.669727,2.43086 z m -1.810743,2.397788 v -5.870445 h 0.793751 v 5.870445 z M 97.10049,93.04017 96.430763,90.60931 h -0.239779 v -1.041797 h 0.587045 l 0.669726,2.521811 h 0.03307 l 0.08268,0.950846 z m 1.537891,2.397788 v -5.870445 h 0.79375 v 5.870445 z"
          style="stroke:none;stroke-width:0.353"
          id="path10148" /><path
