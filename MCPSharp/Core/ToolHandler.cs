@@ -52,10 +52,19 @@ namespace MCPSharp.Core
             }
             catch (Exception ex)
             {
+                var e = ex is TargetInvocationException tie ? tie.InnerException ?? tie : ex;
+                var stackTrace = e.StackTrace?.Split([Environment.NewLine], StringSplitOptions.None)
+                                              .Where(line => !line.Contains("System.RuntimeMethodHandle.InvokeMethod") 
+                                                          && !line.Contains("System.Reflection.MethodBaseInvoker.InvokeWithNoArgs")).ToArray();
+
                 return new CallToolResult
                 {
                     IsError = true,
-                    Content = [new TextContent { Text = $"Exception in HandlerFunction: tool: {_tool.Name}\n{ex.Message}\n\nSTACK\n{ex.StackTrace}" }]
+                    Content = new[]
+                    {
+                        new TextContent { Text = $"{e.Message}" },
+                        new TextContent { Text = $"StackTrace:\n{string.Join("\n", stackTrace)}" }
+                    }
                 };
             }
         }
