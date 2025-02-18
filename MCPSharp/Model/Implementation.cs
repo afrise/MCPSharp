@@ -7,10 +7,18 @@ namespace MCPSharp.Model
     /// </summary>
     public class Implementation
     {
+        /// <summary>
+        /// constructor for the implementation class
+        /// </summary>
         public Implementation()
         {
         }
 
+        /// <summary>
+        /// constructor for the implementation class
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="version"></param>
         public Implementation(string name, string version) : this() 
         {
             Name = name;
