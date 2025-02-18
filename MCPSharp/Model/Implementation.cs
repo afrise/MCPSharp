@@ -7,6 +7,16 @@ namespace MCPSharp.Model
     /// </summary>
     public class Implementation
     {
+        public Implementation()
+        {
+        }
+
+        public Implementation(string name, string version) : this() 
+        {
+            Name = name;
+            Version = version;
+        }
+
         /// <summary>
         /// Gets or sets the name of the implementation.
         /// </summary>

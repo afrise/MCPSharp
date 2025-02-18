@@ -24,8 +24,9 @@ namespace MCPSharp
 
     public class ResourceTemplateListResult
     {
-        [JsonPropertyName("templates")]
+        [JsonPropertyName("resourceTemplates")]
         public List<Template> Templates { get; set; } = [];
+
     }
 
     public class Template

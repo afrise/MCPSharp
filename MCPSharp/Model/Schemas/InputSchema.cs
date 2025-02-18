@@ -10,16 +10,19 @@ namespace MCPSharp.Model.Schemas
         /// <summary>
         /// Gets or sets the type of the input schema.
         /// </summary>
-        public string Type { get; set; }
+        [JsonPropertyName("type")]
+        public string Type { get; set; } = "object"; 
 
         /// <summary>
         /// Gets or sets the properties of the input schema.
         /// </summary>
+        [JsonPropertyName("properties")]
         public Dictionary<string, ParameterSchema> Properties { get; set; }
 
         /// <summary>
         /// Gets or sets the required properties of the input schema.
         /// </summary>
+        [JsonPropertyName("required")]
         public List<string> Required { get; set; }
     }
 }

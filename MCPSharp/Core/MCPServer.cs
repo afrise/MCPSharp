@@ -1,4 +1,5 @@
-﻿using MCPSharp.Core;
+﻿#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+using MCPSharp.Core;
 using MCPSharp.Model;
 using MCPSharp.Model.Capabilities;
 using MCPSharp.Model.Content;
@@ -11,7 +12,6 @@ using System.Reflection;
 
 namespace MCPSharp
 {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     internal class DuplexPipe(PipeReader reader, PipeWriter writer) : IDuplexPipe
     {
         private readonly PipeReader _reader = reader;
@@ -27,13 +27,13 @@ namespace MCPSharp
     {
         private readonly Dictionary<string, ToolHandler<object>> tools = [];
         private readonly JsonRpc _rpc;
-        private Implementation implementation;
+        private readonly Implementation implementation;
         private readonly Stream StandardOutput;
 
         /// <summary>
-        /// The output of Console.WriteLine() will be redirected here. defautls to null, currently no way to change this. 
+        /// The output of Console.WriteLine() will be redirected here. Defaults to null, currently no way to change this. 
         /// </summary>
-        public TextWriter RedirectedOutput = TextWriter.Null;
+        public readonly TextWriter RedirectedOutput = TextWriter.Null;
 
         /// <summary>
         /// Constructor for the MCP server.
@@ -45,6 +45,8 @@ namespace MCPSharp
             var pipe = new DuplexPipe(PipeReader.Create(Console.OpenStandardInput()), PipeWriter.Create(StandardOutput));
             _rpc = new JsonRpc(new NewLineDelimitedMessageHandler(pipe, new SystemTextJsonFormatter()), this);
         }
+
+        public MCPServer(Implementation implementation) : this() => this.implementation = implementation;
 
         /// <summary>
         /// Constructor for the MCP server.
@@ -59,10 +61,8 @@ namespace MCPSharp
         public static async Task StartAsync(string serverName, string version)
         {
 
-            var server = new MCPServer
-            {
-                implementation = new Implementation { Name = serverName, Version = version }
-            };
+            var server = new MCPServer(new Implementation(serverName, version));
+            
 
             foreach (var toolType in Assembly.GetEntryAssembly()!.GetTypes().Where(t => t.GetCustomAttribute<McpToolAttribute>() != null))
             {
@@ -75,51 +75,29 @@ namespace MCPSharp
             await Task.Delay(-1);
         }
 
-        /// <summary>
-        /// Initializes the MCP server. This is called by the client
-        /// </summary>
-        /// <param name="protocolVersion"></param>
-        /// <param name="capabilities"></param>
-        /// <param name="clientInfo"></param>
-        /// <returns></returns>
-        [JsonRpcMethod("initialize")]
-        public InitializeResult Initialize(string protocolVersion, ClientCapabilities capabilities, Implementation clientInfo)
-        {
-            return new InitializeResult(
-                protocolVersion, 
-                new ServerCapabilities {
-                    Tools = new() { { "listChaged", false } },
-                    Resources = [],
-                    Prompts = [],
-                    Sampling = [],
-                    Roots = []}, 
-                implementation);
-        }
-
+        [JsonRpcMethod("initialize")] 
+        public InitializeResult Initialize(string protocolVersion, ClientCapabilities capabilities, Implementation clientInfo) => new (protocolVersion, new ServerCapabilities { Tools = new() { { "listChaged", false } } }, implementation);
+        
         [JsonRpcMethod("notifications/initialized")]
-        public static void Initialized() { }
+        public static async Task InitializedAsync() => await Task.Run(() => { });
+        
+        [JsonRpcMethod("resources/list")] 
+        public async Task<ResourcesListResult> ListResourcesAsync() => await Task.Run(()=>new ResourcesListResult());
+        
+        [JsonRpcMethod("resources/templates/list")] 
+        public async Task<ResourceTemplateListResult> ListResourceTemplatesAsync() => await Task.Run(() => new ResourceTemplateListResult());
+        
+        [JsonRpcMethod("tools/call", UseSingleObjectParameterDeserialization = true)] 
+        public async Task<CallToolResult> CallToolAsync(ToolCallParameters parameters) => !tools.TryGetValue(parameters.Name, out var toolHandler) ? new CallToolResult { IsError = true, Content = [new TextContent { Text = $"Tool {parameters.Name} not found" }] } : await toolHandler.HandleAsync(parameters.Arguments);
+        
+        [JsonRpcMethod("tools/list")] 
+        public async Task<ToolsListResult> ListToolsAsync() => await Task.Run(()=>new ToolsListResult(tools.Values.Select(t => t.Tool).ToList()));
 
-        [JsonRpcMethod("tools/list")]
-        public ToolsListResult ListTools()
-        {
-            var toolsList = tools.Values.Select(t => t.GetToolDefinition()).ToList();
-            return new ToolsListResult { Tools = toolsList };
-        }
+        [JsonRpcMethod("ping")]
+        public async Task<object> PingAsync() => await Task.Run(() => new { });
 
-        [JsonRpcMethod("resources/list")] public ResourcesListResult ListResources() => new() { Resources = [] };
-        [JsonRpcMethod("resources/templates/list")] public ResourceTemplateListResult ListResourceTemplates() => new() { Templates = [] };
-
-        [JsonRpcMethod("tools/call", UseSingleObjectParameterDeserialization = true)]
-        public async Task<CallToolResult> CallToolAsync(ToolCallParameters parameters)
-        {
-            if (!tools.TryGetValue(parameters.Name, out var toolHandler))
-            {
-                //Log.Error($"Tool {parameters.Name} not found");
-                return new CallToolResult { IsError = true, Content = [new TextContent { Text = $"Tool {parameters.Name} not found" }] };
-            }
-
-            return await toolHandler.HandleAsync(parameters.Arguments);
-        }
+        [JsonRpcMethod("prompts/list")]
+        public async Task<object> ListPromptsAsync() => await Task.Run(() => new { prompts=new List<string>() });
 
         private void RegisterTool(Type type)
         {
@@ -153,7 +131,7 @@ namespace MCPSharp
                             Type t when t == typeof(DateTime) => "string",
                             _ => "object"
                         },
-                        Description = p.GetXmlDocumentation() ?? p.GetCustomAttribute<McpParameterAttribute>()?.Description ?? "description not set",
+                        Description = p.GetXmlDocumentation() ?? p.GetCustomAttribute<McpParameterAttribute>()?.Description ?? "",
                         Required = p.GetCustomAttribute<McpParameterAttribute>()?.Required ?? false,
                     }
                 );
