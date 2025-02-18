@@ -1,21 +1,33 @@
-﻿using MCPSharp.Abstractions;
-using MCPSharp.Core;
+﻿using MCPSharp.Core;
 using MCPSharp.Model;
 using MCPSharp.Model.Capabilities;
 using MCPSharp.Model.Content;
 using MCPSharp.Model.Parameters;
 using MCPSharp.Model.Results;
 using MCPSharp.Model.Schemas;
-using Nerdbank.Streams;
 using StreamJsonRpc;
+using System.IO.Pipelines;
 using System.Reflection;
 
 namespace MCPSharp
 {
+    class DuplexPipe : IDuplexPipe 
+    {
+        private readonly PipeReader _reader;
+        private readonly PipeWriter _writer;
+        public DuplexPipe(PipeReader reader, PipeWriter writer) 
+        {
+            var r = PipeReader.Create(Console.OpenStandardInput());
+            _reader = reader;
+            _writer = writer;
+        }
+        public PipeReader Input => _reader;
+        public PipeWriter Output => _writer;
+    }
     /// <summary>
     /// Main class for the MCP server.
     /// </summary>
-    public partial class MCPServer : IMCPServer
+    public partial class MCPServer 
     {
         private readonly Dictionary<string, ToolHandler<object>> tools = [];
         private readonly JsonRpc _rpc;
@@ -26,11 +38,11 @@ namespace MCPSharp
         /// </summary>
         public MCPServer()
         {
-            _rpc = new JsonRpc(new NewLineDelimitedMessageHandler(
-                new DuplexPipe(Console.OpenStandardInput().UsePipeReader(), Console.OpenStandardOutput().UsePipeWriter()),
-                new SystemTextJsonFormatter()), this);
+            var pipe = new DuplexPipe(PipeReader.Create(Console.OpenStandardInput()), PipeWriter.Create(Console.OpenStandardOutput())); 
+            _rpc = new JsonRpc(new NewLineDelimitedMessageHandler(pipe, new SystemTextJsonFormatter()), this);
         }
 
+        
         /// <summary>
         /// Starts the MCP Server, Registers all tools and starts listening for requests.
         /// </summary>

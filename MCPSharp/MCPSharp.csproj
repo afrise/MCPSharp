@@ -1,18 +1,35 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
+	  <LangVersion>13.0</LangVersion>	
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <Nullable>disable</Nullable>
     
     <!-- Package Metadata -->
     <PackageId>MCPSharp</PackageId>
-    <Version>0.9.2</Version>
+    <Version>0.9.4</Version>
     <Authors>Allen Frise</Authors>
     <Company></Company>
     <Title>MCPSharp - Model Context Protocol for .NET</Title>
-    <Description>Build Model Context Protocol (MCP) servers in .NET with MCPSharp. Create MCP-compliant tools and functions that AI models can discover and use. Features attribute-based API, automatic documentation generation, and seamless JSON-RPC communication.</Description>
-    
+    <Description>
+Build Model Context Protocol (MCP) servers in .NET with MCPSharp. 
+
+Create MCP-compliant tools and functions that AI models can discover and use. Features attribute-based API, and seamless JSON-RPC communication.
+
+
+await MCPServer.StartAsync("EchoServer", "1.0.0");
+[McpTool]
+class MyTool 
+{
+    [McpFunction("echo","returns the input string back to you")]
+    public string echo(string input) =&gt; input;
+}
+
+</Description>
+
+	<PackageIcon>icon.png</PackageIcon>
+	  
     <!-- Package Tags -->
     <PackageTags>mcp;ai;machine-learning;json-rpc;api;tools;claude;anthropic;model-context-protocol;tool-calling</PackageTags>
     
@@ -21,7 +38,7 @@
     <RepositoryType>git</RepositoryType>
     
     <!-- Documentation -->
-	  <PackageReadmeFile>README.md</PackageReadmeFile>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     
     <!-- License -->
@@ -33,12 +50,32 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0|AnyCPU'">
+    <WarningLevel>8</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0|AnyCPU'">
+    <WarningLevel>8</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
+    <WarningLevel>8</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
+    <WarningLevel>8</WarningLevel>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="DynamicClassGenerator.cs" />
     <Compile Remove="McpSerializerContext.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="PolySharp" Version="1.15.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="StreamJsonRpc" Version="2.21.10" />
   </ItemGroup>
 
@@ -46,6 +83,12 @@
     <None Include="README.md" Pack="true" PackagePath="\">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+	  <None Update="icon.png" Pack="true" PackagePath="\">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties jrpc-schema_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>

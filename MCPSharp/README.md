@@ -25,8 +25,7 @@ Use MCPSharp when you want to:
 
 ## Prerequisites
 
-- .NET 9.0 or higher
-- C# 13.0 or higher
+- .NET Framework 4.6.2 or higher, or any .NET Core version
 
 ## Installation
 
