@@ -69,6 +69,32 @@ namespace MCPSharp
         public async Task<CallToolResult> CallToolAsync(string name) => 
             await _rpc.InvokeWithParameterObjectAsync<CallToolResult>("tools/call", new ToolCallParameters{ Name = name, Arguments = [], Meta = new() });
 
+
+        /// <summary>
+        /// Get a list of resources from the MCP Server
+        /// </summary>
+        /// <returns></returns>
+        public async Task<ResourcesListResult> GetResourcesAsync() => await _rpc.InvokeAsync<ResourcesListResult>("resources/list");
+
+        /// <summary>
+        /// Get a list of resource templates from the MCP Server
+        /// </summary>
+        /// <returns></returns>
+        public async Task<ResourceTemplateListResult> GetResourceTemplatesAsync() => await _rpc.InvokeAsync<ResourceTemplateListResult>("resources/templates/list");
+
+
+        /// <summary>
+        /// Ping the MCP Server
+        /// </summary>
+        /// <returns></returns>
+        public async Task<object> PingAsync() => await _rpc.InvokeAsync<object>("ping");
+
+        /// <summary>
+        /// Get a list of prompts from the MCP Server
+        /// </summary>
+        /// <returns></returns>
+        public async Task<PromptListResult> GetPromptListAsync() => await _rpc.InvokeAsync<PromptListResult>("prompts/list");
+
         /// <summary>
         /// Dispose of the client
         /// </summary>

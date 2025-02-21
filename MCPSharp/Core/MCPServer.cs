@@ -97,7 +97,7 @@ namespace MCPSharp
         public async Task<object> PingAsync() => await Task.Run(() => new { });
 
         [JsonRpcMethod("prompts/list")]
-        public async Task<object> ListPromptsAsync() => await Task.Run(() => new { prompts=new List<string>() });
+        public async Task<PromptListResult> ListPromptsAsync() => await Task.Run(() => new PromptListResult()); 
 
         private void RegisterTool(Type type)
         {
