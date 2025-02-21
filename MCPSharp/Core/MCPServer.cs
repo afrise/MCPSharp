@@ -1,4 +1,5 @@
-﻿using MCPSharp.Core;
+﻿#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+using MCPSharp.Core;
 using MCPSharp.Model;
 using MCPSharp.Model.Capabilities;
 using MCPSharp.Model.Content;
@@ -45,7 +46,7 @@ namespace MCPSharp
             var pipe = new DuplexPipe(PipeReader.Create(Console.OpenStandardInput()), PipeWriter.Create(StandardOutput));
             _rpc = new JsonRpc(new NewLineDelimitedMessageHandler(pipe, new SystemTextJsonFormatter()), this);
         }
-
+      
         /// <summary>
         /// Constructor for the MCP server with implementation details.
         /// </summary>
@@ -67,6 +68,7 @@ namespace MCPSharp
         public static async Task StartAsync(string serverName, string version)
         {
             _instance = new MCPServer(new Implementation(serverName, version));
+
 
             foreach (var toolType in Assembly.GetEntryAssembly()!.GetTypes().Where(t => t.GetCustomAttribute<McpToolAttribute>() != null))
             {
@@ -144,6 +146,7 @@ namespace MCPSharp
         /// Registers a tool with the server.
         /// </summary>
         /// <param name="type">The type of the tool to register.</param>
+
         private void RegisterTool(Type type)
         {
             var instance = Activator.CreateInstance(type);
@@ -196,6 +199,7 @@ namespace MCPSharp
                 tools[tool.Name] = handler;
             }
         }
+
 
         /// <summary>
         /// Starts the JSON-RPC listener.
