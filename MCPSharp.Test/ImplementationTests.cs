@@ -3,7 +3,7 @@
     [TestClass]
     public sealed class ImplementationTests
     {
-        private readonly static MCPClient client = new("MCPSharp.Example.exe", "Test Client", "1.0.0");
+        private readonly static MCPClient client = new("Test Client", "1.0.0", "MCPSharp.Example.exe");
 
         [ClassCleanup]
         public static void ClassCleanup() { client?.Dispose(); }

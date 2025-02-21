@@ -25,13 +25,14 @@ namespace MCPSharp
     /// </summary>
     public class MCPServer
     {
+        private static MCPServer _instance;
         private readonly Dictionary<string, ToolHandler<object>> tools = [];
         private readonly JsonRpc _rpc;
         private readonly Implementation implementation;
         private readonly Stream StandardOutput;
 
         /// <summary>
-        /// The output of Console.WriteLine() will be redirected here. Defaults to null, currently no way to change this. 
+        /// The output of Console.WriteLine() will be redirected here. Defaults to null, currently no way to change this.
         /// </summary>
         public readonly TextWriter RedirectedOutput = TextWriter.Null;
 
@@ -46,59 +47,104 @@ namespace MCPSharp
             _rpc = new JsonRpc(new NewLineDelimitedMessageHandler(pipe, new SystemTextJsonFormatter()), this);
         }
 
+        /// <summary>
+        /// Constructor for the MCP server with implementation details.
+        /// </summary>
+        /// <param name="implementation">The implementation details of the server.</param>
         public MCPServer(Implementation implementation) : this() => this.implementation = implementation;
 
         /// <summary>
-        /// Constructor for the MCP server.
+        /// Constructor for the MCP server with output redirection.
         /// </summary>
-        /// <param name="outputWriter">a TextWriter object where any Console.Write() calls will go</param>
-        public MCPServer(TextWriter outputWriter) : this() => RedirectedOutput = outputWriter; 
+        /// <param name="outputWriter">A TextWriter object where any Console.Write() calls will go.</param>
+        public MCPServer(TextWriter outputWriter) : this() => RedirectedOutput = outputWriter;
 
         /// <summary>
-        /// Starts the MCP Server, Registers all tools and starts listening for requests.
+        /// Starts the MCP Server, registers all tools, and starts listening for requests.
         /// </summary>
-        /// <returns></returns>
+        /// <param name="serverName">The name of the server.</param>
+        /// <param name="version">The version of the server.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
         public static async Task StartAsync(string serverName, string version)
         {
-
-            var server = new MCPServer(new Implementation(serverName, version));
-            
+            _instance = new MCPServer(new Implementation(serverName, version));
 
             foreach (var toolType in Assembly.GetEntryAssembly()!.GetTypes().Where(t => t.GetCustomAttribute<McpToolAttribute>() != null))
             {
-                server.RegisterTool(toolType);
+                _instance.RegisterTool(toolType);
                 var registerMethod = typeof(MCPServer).GetMethod(nameof(RegisterTool))?.MakeGenericMethod(toolType);
-                registerMethod?.Invoke(server, null);
+                registerMethod?.Invoke(_instance, null);
             }
 
-            server.Start();
+            _instance.Start();
+
             await Task.Delay(-1);
         }
 
-        [JsonRpcMethod("initialize")] 
-        public InitializeResult Initialize(string protocolVersion, ClientCapabilities capabilities, Implementation clientInfo) => new (protocolVersion, new ServerCapabilities { Tools = new() { { "listChaged", false } } }, implementation);
-        
+        /// <summary>
+        /// Initializes the server with the specified protocol version, client capabilities, and client information.
+        /// </summary>
+        /// <param name="protocolVersion">The protocol version.</param>
+        /// <param name="capabilities">The client capabilities.</param>
+        /// <param name="clientInfo">The client information.</param>
+        /// <returns>The result of the initialization process.</returns>
+        [JsonRpcMethod("initialize")]
+        public InitializeResult Initialize(string protocolVersion, ClientCapabilities capabilities, Implementation clientInfo) => new(protocolVersion, new ServerCapabilities { Tools = new() { { "listChanged", false } } }, implementation);
+
+        /// <summary>
+        /// Handles the "notifications/initialized" JSON-RPC method.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous operation.</returns>
         [JsonRpcMethod("notifications/initialized")]
         public static async Task InitializedAsync() => await Task.Run(() => { });
-        
-        [JsonRpcMethod("resources/list")] 
-        public async Task<ResourcesListResult> ListResourcesAsync() => await Task.Run(()=>new ResourcesListResult());
-        
-        [JsonRpcMethod("resources/templates/list")] 
-        public async Task<ResourceTemplateListResult> ListResourceTemplatesAsync() => await Task.Run(() => new ResourceTemplateListResult());
-        
-        [JsonRpcMethod("tools/call", UseSingleObjectParameterDeserialization = true)] 
-        public async Task<CallToolResult> CallToolAsync(ToolCallParameters parameters) => !tools.TryGetValue(parameters.Name, out var toolHandler) ? new CallToolResult { IsError = true, Content = [new TextContent { Text = $"Tool {parameters.Name} not found" }] } : await toolHandler.HandleAsync(parameters.Arguments);
-        
-        [JsonRpcMethod("tools/list")] 
-        public async Task<ToolsListResult> ListToolsAsync() => await Task.Run(()=>new ToolsListResult([.. tools.Values.Select(t => t.Tool)]));
 
+        /// <summary>
+        /// Lists the resources available on the server.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the list of resources.</returns>
+        [JsonRpcMethod("resources/list")]
+        public async Task<ResourcesListResult> ListResourcesAsync() => await Task.Run(() => new ResourcesListResult());
+
+        /// <summary>
+        /// Lists the resource templates available on the server.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the list of resource templates.</returns>
+        [JsonRpcMethod("resources/templates/list")]
+        public async Task<ResourceTemplateListResult> ListResourceTemplatesAsync() => await Task.Run(() => new ResourceTemplateListResult());
+
+        /// <summary>
+        /// Calls a tool with the specified parameters.
+        /// </summary>
+        /// <param name="parameters">The parameters for the tool call.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the result of the tool call.</returns>
+        [JsonRpcMethod("tools/call", UseSingleObjectParameterDeserialization = true)]
+        public async Task<CallToolResult> CallToolAsync(ToolCallParameters parameters) => !tools.TryGetValue(parameters.Name, out var toolHandler) ? new CallToolResult { IsError = true, Content = [new TextContent { Text = $"Tool {parameters.Name} not found" }] } : await toolHandler.HandleAsync(parameters.Arguments);
+
+        /// <summary>
+        /// Lists the tools available on the server.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the list of tools.</returns>
+        [JsonRpcMethod("tools/list")]
+        public async Task<ToolsListResult> ListToolsAsync() => await Task.Run(() => new ToolsListResult([.. tools.Values.Select(t => t.Tool)]));
+
+        /// <summary>
+        /// Pings the server.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the ping response.</returns>
         [JsonRpcMethod("ping")]
         public async Task<object> PingAsync() => await Task.Run(() => new { });
 
+        /// <summary>
+        /// Lists the prompts available on the server.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the list of prompts.</returns>
         [JsonRpcMethod("prompts/list")]
-        public async Task<PromptListResult> ListPromptsAsync() => await Task.Run(() => new PromptListResult()); 
+        public async Task<PromptListResult> ListPromptsAsync() => await Task.Run(() => new PromptListResult());
 
+        /// <summary>
+        /// Registers a tool with the server.
+        /// </summary>
+        /// <param name="type">The type of the tool to register.</param>
         private void RegisterTool(Type type)
         {
             var instance = Activator.CreateInstance(type);
@@ -152,6 +198,9 @@ namespace MCPSharp
             }
         }
 
+        /// <summary>
+        /// Starts the JSON-RPC listener.
+        /// </summary>
         private void Start() => _rpc.StartListening();
     }
 }

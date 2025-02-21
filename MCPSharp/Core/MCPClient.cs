@@ -8,7 +8,7 @@ using System.IO.Pipelines;
 namespace MCPSharp
 {
     /// <summary>
-    /// MCPSharp Model Context Protocl Client
+    /// MCPSharp Model Context Protocol Client.
     /// </summary>
     public class MCPClient : IDisposable
     {
@@ -19,87 +19,94 @@ namespace MCPSharp
         private List<Tool> _tools;
 
         /// <summary>
-        /// Constructor for the MCP client.
+        /// Initializes a new instance of the <see cref="MCPClient"/> class.
         /// </summary>
-        /// <param name="server">the path to the executable</param>
-        /// <param name="name"></param>
-        /// <param name="version"></param>
-        /// <param name="args"></param>
-        public MCPClient(string server, string name, string version, params string[] args)
+        /// <param name="name">The name of the client.</param>
+        /// <param name="version">The version of the client.</param>
+        /// <param name="server">The path to the executable server.</param>
+        /// <param name="args">Additional arguments for the server.</param>
+        public MCPClient(string name, string version, string server, params string[] args)
         {
             _name = name;
             _version = version;
-            _process = new() { 
-                StartInfo = new() { 
-                    FileName = server, 
+            _process = new()
+            {
+                StartInfo = new()
+                {
+                    FileName = server,
                     Arguments = string.Join(" ", args),
-                    UseShellExecute = false, 
-                    RedirectStandardInput = true, 
-                    RedirectStandardOutput = true, 
-                    RedirectStandardError = true, 
-                    CreateNoWindow = true } };            
+                    UseShellExecute = false,
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                }
+            };
             _process.Start();
             var pipe = new DuplexPipe(PipeReader.Create(_process.StandardOutput.BaseStream), PipeWriter.Create(_process.StandardInput.BaseStream));
             _rpc = new JsonRpc(new NewLineDelimitedMessageHandler(pipe, new SystemTextJsonFormatter()), this);
             _rpc.StartListening();
             _ = _rpc.InvokeAsync<InitializeResult>("initialize", ["2024-11-05", new { roots = new { listChanged = false }, sampling = new { } }, new { name = _name, version = _version }]);
-            _ = _rpc.NotifyAsync("notifications/initialized"); 
+            _ = _rpc.NotifyAsync("notifications/initialized");
             _ = GetToolsAsync();
         }
 
-        /// <summary>Gets a list of Tools from the MCP Server</summary>
-        /// <returns></returns>
-        public async Task<List<Tool>> GetToolsAsync() {
+        /// <summary>
+        /// Gets a list of tools from the MCP server.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of tools.</returns>
+        public async Task<List<Tool>> GetToolsAsync()
+        {
             _tools = (await _rpc.InvokeAsync<ToolsListResult>("tools/list")).Tools;
             return _tools;
         }
 
-        /// <summary>Call a tool with the given name and parameters</summary>
-        /// <param name="name"></param>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
-        public async Task<CallToolResult> CallToolAsync(string name, Dictionary<string, object> parameters) => 
-            await _rpc.InvokeWithParameterObjectAsync<CallToolResult>("tools/call", new ToolCallParameters{ Arguments = parameters, Name = name, Meta=new MetaData() });
+        /// <summary>
+        /// Calls a tool with the given name and parameters.
+        /// </summary>
+        /// <param name="name">The name of the tool to call.</param>
+        /// <param name="parameters">The parameters to pass to the tool.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the result of the tool call.</returns>
+        public async Task<CallToolResult> CallToolAsync(string name, Dictionary<string, object> parameters) =>
+            await _rpc.InvokeWithParameterObjectAsync<CallToolResult>("tools/call", new ToolCallParameters { Arguments = parameters, Name = name, Meta = new MetaData() });
 
         /// <summary>
-        /// Call a tool with the given name
+        /// Calls a tool with the given name.
         /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public async Task<CallToolResult> CallToolAsync(string name) => 
-            await _rpc.InvokeWithParameterObjectAsync<CallToolResult>("tools/call", new ToolCallParameters{ Name = name, Arguments = [], Meta = new() });
-
+        /// <param name="name">The name of the tool to call.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the result of the tool call.</returns>
+        public async Task<CallToolResult> CallToolAsync(string name) =>
+            await _rpc.InvokeWithParameterObjectAsync<CallToolResult>("tools/call", new ToolCallParameters { Name = name, Arguments = [], Meta = new() });
 
         /// <summary>
-        /// Get a list of resources from the MCP Server
+        /// Gets a list of resources from the MCP server.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of resources.</returns>
         public async Task<ResourcesListResult> GetResourcesAsync() => await _rpc.InvokeAsync<ResourcesListResult>("resources/list");
 
         /// <summary>
-        /// Get a list of resource templates from the MCP Server
+        /// Gets a list of resource templates from the MCP server.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of resource templates.</returns>
         public async Task<ResourceTemplateListResult> GetResourceTemplatesAsync() => await _rpc.InvokeAsync<ResourceTemplateListResult>("resources/templates/list");
 
-
         /// <summary>
-        /// Ping the MCP Server
+        /// Pings the MCP server.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the ping response.</returns>
         public async Task<object> PingAsync() => await _rpc.InvokeAsync<object>("ping");
 
         /// <summary>
-        /// Get a list of prompts from the MCP Server
+        /// Gets a list of prompts from the MCP server.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of prompts.</returns>
         public async Task<PromptListResult> GetPromptListAsync() => await _rpc.InvokeAsync<PromptListResult>("prompts/list");
 
         /// <summary>
-        /// Dispose of the client
+        /// Releases all resources used by the <see cref="MCPClient"/> class.
         /// </summary>
         public void Dispose()
-        {    
+        {
             _rpc.Dispose();
 
             _process.Kill();
