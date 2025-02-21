@@ -91,7 +91,7 @@ namespace MCPSharp
         public async Task<CallToolResult> CallToolAsync(ToolCallParameters parameters) => !tools.TryGetValue(parameters.Name, out var toolHandler) ? new CallToolResult { IsError = true, Content = [new TextContent { Text = $"Tool {parameters.Name} not found" }] } : await toolHandler.HandleAsync(parameters.Arguments);
         
         [JsonRpcMethod("tools/list")] 
-        public async Task<ToolsListResult> ListToolsAsync() => await Task.Run(()=>new ToolsListResult(tools.Values.Select(t => t.Tool).ToList()));
+        public async Task<ToolsListResult> ListToolsAsync() => await Task.Run(()=>new ToolsListResult([.. tools.Values.Select(t => t.Tool)]));
 
         [JsonRpcMethod("ping")]
         public async Task<object> PingAsync() => await Task.Run(() => new { });
@@ -143,7 +143,7 @@ namespace MCPSharp
                     InputSchema = new InputSchema
                     {
                         Properties = parameterSchemas,
-                        Required = parameterSchemas.Where(kvp => kvp.Value.Required).Select(kvp => kvp.Key).ToList(),
+                        Required = [.. parameterSchemas.Where(kvp => kvp.Value.Required).Select(kvp => kvp.Key)],
                     }
                 };
 

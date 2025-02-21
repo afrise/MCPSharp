@@ -2,13 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-	  <LangVersion>13.0</LangVersion>	
+	<LangVersion>13.0</LangVersion>	
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
-    
+	  
     <!-- Package Metadata -->
     <PackageId>MCPSharp</PackageId>
-    <Version>0.9.4</Version>
+    <Version>0.9.8</Version>
     <Authors>Allen Frise</Authors>
     <Company></Company>
     <Title>MCPSharp - Model Context Protocol for .NET</Title>
@@ -27,26 +27,16 @@ class MyTool
 }
 
 </Description>
-
 	<PackageIcon>icon.png</PackageIcon>
-	  
     <!-- Package Tags -->
-    <PackageTags>mcp;ai;machine-learning;json-rpc;api;tools;claude;anthropic;model-context-protocol;tool-calling</PackageTags>
-    
+    <PackageTags>mcp;sharp;mcpsharp;mcp-sharp;mcp#;ai;machine-learning;json-rpc;api;tools;claude;anthropic;model-context-protocol;tool-calling;model;context;protocol;server;mcp-server;modelcontextprotocol;mcpserver;standard;</PackageTags>
     <!-- Repository Info -->
     <RepositoryUrl>https://github.com/afrise/MCPSharp</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    
-    <!-- Documentation -->
 	<PackageReadmeFile>README.md</PackageReadmeFile>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    
-    <!-- License -->
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    
-    <!-- Project URL -->
     <PackageProjectUrl>https://github.com/afrise/MCPSharp</PackageProjectUrl>
-    
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
@@ -65,11 +55,6 @@ class MyTool
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
     <WarningLevel>8</WarningLevel>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="DynamicClassGenerator.cs" />
-    <Compile Remove="McpSerializerContext.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="PolySharp" Version="1.15.0">

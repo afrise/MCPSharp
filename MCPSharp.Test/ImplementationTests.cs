@@ -1,74 +1,61 @@
-﻿using System.Diagnostics;
-
-namespace MCPSharp.Test
+﻿namespace MCPSharp.Test
 {
     [TestClass]
     public sealed class ImplementationTests 
     {
-        private static Process? server;
+        private readonly static MCPClient client = new("MCPSharp.Example.exe", "Test Client", "1.0.0");
 
-        [ClassInitialize]
-        public static void ClassInit(TestContext context)
+        [ClassCleanup] 
+        public static void ClassCleanup() { client?.Dispose(); }
+
+        [TestMethod("Tools/List")]
+        public async Task Test_ListTools()  
         {
-            server = new Process
+            var tools = await client.GetToolsAsync();
+            Assert.IsNotNull(tools);
+            Assert.IsTrue(tools.Count > 0);
+            tools.ForEach(tool =>
             {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "MCPSharp.Example.exe",
-                    UseShellExecute = false,
-                    RedirectStandardInput = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true
-                }
-            };
-            server.Start();
-
-            Assert.IsFalse(server.HasExited);
+                Assert.IsFalse(string.IsNullOrEmpty(tool.Name));
+                Assert.IsFalse(string.IsNullOrEmpty(tool.Description));
+            });
         }
 
-        [ClassCleanup]
-        public static void ClassCleanup()
+        [TestMethod("Tools/Call")]
+        public async Task TestCallTool()
         {
-            server!.Kill();
-            server.Dispose();
-            Console.WriteLine("Server killed");
-            Console.WriteLine("Test complete");
+            var result = await client.CallToolAsync("Hello");
+            string response = result.Content[0].Text;
+            Assert.AreEqual("hello, claude.", response);
         }
 
-        [TestInitialize]
-        public void TestInit()
+        [TestMethod("Tools/Call with Parameters")]
+        public async Task TestCallToolWithParameters()
         {
-            // This method is called before each test method.
+            var result = await client.CallToolAsync("Echo", new Dictionary<string, object>{{ "input", "this is a test of the echo function" }});
+            string response = result.Content[0].Text;
+            Assert.AreEqual("this is a test of the echo function", response);
         }
 
-        [TestCleanup]
-        public void TestCleanup()
+        [TestMethod("Exception Handling")]
+        public async Task TestException()
         {
-            // This method is called after each test method.
+            var result = await client.CallToolAsync("throw_exception");
+            string response = result.Content[0].Text;
+            Assert.AreEqual("This is an exception", response);
         }
 
-        [TestMethod]
-        public async Task TestInitializeAndListTools() 
+        [TestMethod("Tools/Call with Invalid Tool")]
+        public async Task TestCallInvalidTool()
         {
-            Assert.IsNotNull(server, "Server not running!"); 
+            Assert.IsTrue((await client.CallToolAsync("NotARealTool")).IsError);
+        }
 
-            await server.StandardInput.WriteLineAsync("{\"jsonrpc\": \"2.0\",\"id\": 1,\"method\": \"initialize\",\"params\": {\"protocolVersion\": \"2024-11-05\",\"capabilities\": {\"roots\": {\"listChanged\": true},\"sampling\": {}},\"clientInfo\": {\"name\": \"ExampleClient\",\"version\": \"1.0.0\"}}}");
-            await server.StandardInput.FlushAsync();
-            var response = await server.StandardOutput.ReadLineAsync();
-            Console.WriteLine(response);
-         
-            //finish the handshake
-            await server.StandardInput.WriteLineAsync("{\"jsonrpc\": \"2.0\",\"method\": \"notifications/initialized\"}");
-            await server.StandardInput.FlushAsync();
-
-            //list tools
-            await server.StandardInput.WriteLineAsync("{\"jsonrpc\": \"2.0\",\"id\": 1,\"method\": \"tools/list\",\"params\": {}}");
-            await server.StandardInput.FlushAsync();
-            response = await server.StandardOutput.ReadLineAsync();
-            Console.WriteLine(response);
-            Assert.IsNotNull(response);
-            Assert.IsTrue(response.Contains("tool"));
+        [TestMethod("Tools/Call with Invalid Parameters")]
+        public async Task TestCallToolWithInvalidParameters()
+        {
+            var result = await client.CallToolAsync("Echo", new Dictionary<string, object> { { "invalid_param", "test" } });
+            Assert.IsTrue(result.IsError);
         }
     }
 }
