@@ -57,7 +57,7 @@ namespace MCPSharp
         /// <returns>A task that represents the asynchronous operation. The task result contains a list of tools.</returns>
         public async Task<List<Tool>> GetToolsAsync()
         {
-            _tools = (await _rpc.InvokeAsync<ToolsListResult>("tools/list")).Tools;
+            _tools = (await _rpc.InvokeWithParameterObjectAsync<ToolsListResult>("tools/list")).Tools;
             return _tools;
         }
 
@@ -82,25 +82,25 @@ namespace MCPSharp
         /// Gets a list of resources from the MCP server.
         /// </summary>
         /// <returns>A task that represents the asynchronous operation. The task result contains a list of resources.</returns>
-        public async Task<ResourcesListResult> GetResourcesAsync() => await _rpc.InvokeAsync<ResourcesListResult>("resources/list");
+        public async Task<ResourcesListResult> GetResourcesAsync() => await _rpc.InvokeWithParameterObjectAsync<ResourcesListResult>("resources/list");
 
         /// <summary>
         /// Gets a list of resource templates from the MCP server.
         /// </summary>
         /// <returns>A task that represents the asynchronous operation. The task result contains a list of resource templates.</returns>
-        public async Task<ResourceTemplateListResult> GetResourceTemplatesAsync() => await _rpc.InvokeAsync<ResourceTemplateListResult>("resources/templates/list");
+        public async Task<ResourceTemplateListResult> GetResourceTemplatesAsync() => await _rpc.InvokeWithParameterObjectAsync<ResourceTemplateListResult>("resources/templates/list");
 
         /// <summary>
         /// Pings the MCP server.
         /// </summary>
         /// <returns>A task that represents the asynchronous operation. The task result contains the ping response.</returns>
-        public async Task<object> PingAsync() => await _rpc.InvokeAsync<object>("ping");
+        public async Task<object> PingAsync() => await _rpc.InvokeWithParameterObjectAsync<object>("ping");
 
         /// <summary>
         /// Gets a list of prompts from the MCP server.
         /// </summary>
         /// <returns>A task that represents the asynchronous operation. The task result contains a list of prompts.</returns>
-        public async Task<PromptListResult> GetPromptListAsync() => await _rpc.InvokeAsync<PromptListResult>("prompts/list");
+        public async Task<PromptListResult> GetPromptListAsync() => await _rpc.InvokeWithParameterObjectAsync<PromptListResult>("prompts/list");
 
         /// <summary>
         /// Releases all resources used by the <see cref="MCPClient"/> class.
