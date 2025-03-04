@@ -6,16 +6,21 @@ class MCPClientPool : ICollection<MCPClient>
 {
     private readonly List<MCPClient> clients = [];
 
-    public List<AITool> GetAllAIFunctions()
+    public async Task<List<AITool>> GetAllAIFunctionsAsync()
     {
         var functions = new List<AITool>();
-        clients.ForEach(c => functions.AddRange(c.GetFunctionsAsync().Result));
+        
+        foreach (var c in clients)
+        {
+            functions.AddRange(await c.GetFunctionsAsync());
+        }
+        
         return functions;
     }
 
     public int Count => clients.Count;
     public bool IsReadOnly => false;
-    public void Add(string name, McpServerConfiguration server, Func<Dictionary<string, object>, bool> permissionFunction = null)
+    public void Add(string name, McpServerConfiguration server, Func<Dictionary<string, object>, bool>? permissionFunction = null)
     {
         clients.Add(new MCPClient(name, "0.1.0", server.Command, string.Join(' ', server.Args ?? []), server.Env)
         {

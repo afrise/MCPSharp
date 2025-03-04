@@ -2,10 +2,8 @@
 using System.Text;
 using System.Text.Json;
 
-JsonSerializerOptions jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
 
-McpServerConfigurationCollection conf = JsonSerializer.Deserialize<McpServerConfigurationCollection>(File.ReadAllText("config.json"), 
-    jsonSerializerOptions)!;
+McpServerConfigurationCollection conf = JsonSerializer.Deserialize<McpServerConfigurationCollection>(File.ReadAllText("config.json"), JsonOptionsManager.Standard)!;
 
 MCPClientPool clients = [];
 foreach (var server in conf.McpServers)
@@ -23,8 +21,8 @@ foreach (var server in conf.McpServers)
 }
 
 var chatOptions = new ChatOptions { 
-    Tools = clients.GetAllAIFunctions(),
-    ToolMode = ChatToolMode.Auto //let the assistant choose not to use a tool if it doesn't need to
+    Tools = clients.GetAllAIFunctionsAsync().Result,
+    ToolMode = ChatToolMode.Auto //let the assistant choose not to use a tool if it doesn't need to (should be default)
 };
 var chatHistory = new List<ChatMessage>() { new(ChatRole.System, conf.Models["ollama"].SystemPrompt) }; 
 var chatClient = new OllamaChatClient(conf.Models["ollama"].Endpoint, conf.Models["ollama"].ModelId).AsBuilder().UseFunctionInvocation().Build();
@@ -47,17 +45,21 @@ class McpServerConfiguration
     public Dictionary<string, string> Env { get; set; } = [];
 }
 
+class JsonOptionsManager
+{
+    public static JsonSerializerOptions Standard = new() { PropertyNameCaseInsensitive = true };
+}
 class McpServerConfigurationCollection
 {
-    public Dictionary<string, McpServerConfiguration> McpServers { get; set; }
-    public Dictionary<string, ModelConfiguration> Models { get; set; }
+    public Dictionary<string, McpServerConfiguration> McpServers { get; set; } = [];
+    public Dictionary<string, ModelConfiguration> Models { get; set; } = [];
 }
 
 
 class ModelConfiguration
 {
-    public string Endpoint { get; set; }
-    public string ModelId { get; set; }
-    public string SystemPrompt { get; set; }
+    public string Endpoint { get; set; } = "";
+    public string ModelId { get; set; } = "";
+    public string SystemPrompt { get; set; } = "";
 }
 

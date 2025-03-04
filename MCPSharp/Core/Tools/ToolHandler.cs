@@ -6,11 +6,26 @@ using System.Text.Json;
 
 namespace MCPSharp.Core.Tools
 {
+    /// <summary>
+    /// The ToolHandler class is responsible for handling the invocation of a tool.
+    /// </summary>
+    /// <param name="tool">The Tool object holds the description of the Tool and it's parameters</param>
+    /// <param name="method">The Attributes and metadata of a method, needed to invoke it.</param>
     public class ToolHandler(Tool tool, MethodInfo method)
     {
+        /// <summary>
+        /// The Tool object holds the description of the Tool and it's parameters
+        /// </summary>
         public Tool Tool = tool;
+        
         private readonly MethodInfo _method = method;
-       
+
+        /// <summary>
+        /// Handles the invocation of a tool with the specified parameters.
+        /// </summary>
+        /// <param name="parameters"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<CallToolResult> HandleAsync(Dictionary<string, object> parameters, CancellationToken cancellationToken = default)
         {
             try

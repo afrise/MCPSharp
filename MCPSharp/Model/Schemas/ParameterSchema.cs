@@ -27,6 +27,9 @@ namespace MCPSharp.Model.Schemas
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonElement? Contents { get; set; } = null;
 
+        /// <summary>
+        /// sets whether the parameter is required
+        /// </summary>
         [JsonIgnore]
         public bool Required { get; set; } = false;
     }

@@ -23,20 +23,20 @@ namespace MCPSharp.Core.Transport
         public PipeWriter Output => _writer;
     }
 
-    internal class SSETransportPipe : IDuplexPipe
-    {
-        private readonly HttpClient _httpClient = new();
-        private readonly Uri _address;
-        public SSETransportPipe(Uri address)
-        {
-            _address = address;
-            _reader = PipeReader.Create( _httpClient.GetStreamAsync(_address).Result);
-            _writer = PipeWriter.Create(new HttpPostStream(_address.ToString()));
-        }
+    //internal class SSETransportPipe : IDuplexPipe
+    //{
+    //    private readonly HttpClient _httpClient = new();
+    //    private readonly Uri _address;
+    //    public SSETransportPipe(Uri address)
+    //    {
+    //        _address = address;
+    //        _reader = PipeReader.Create( _httpClient.GetStreamAsync(_address).Result);
+    //        _writer = PipeWriter.Create(new HttpPostStream(_address.ToString()));
+    //    }
 
-        private PipeReader _reader;
-        private PipeWriter _writer;
-        public PipeReader Input => _reader;
-        public PipeWriter Output => _writer;
-    }
+    //    private PipeReader _reader;
+    //    private PipeWriter _writer;
+    //    public PipeReader Input => _reader;
+    //    public PipeWriter Output => _writer;
+    //}
 }

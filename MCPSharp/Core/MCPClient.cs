@@ -40,7 +40,7 @@ namespace MCPSharp
         /// <param name="name">The name of the client.</param>
         /// <param name="version">The version of the client.</param>
         /// <param name="server">The path to the executable server.</param>
-        /// <param name="env">Dictionary containing enviroment variables
+        /// <param name="env">Dictionary containing enviroment variables</param>
         /// <param name="args">Additional arguments for the server.</param>
         public MCPClient(string name, string version, string server, string args = null, IDictionary<string, string> env =null)
         {

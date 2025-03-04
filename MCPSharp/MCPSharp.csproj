@@ -81,7 +81,7 @@ await client.CallToolAsync("echo", new Dictionary&lt;string, object&gt;{{"input"
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.3.0" />
     <PackageReference Include="Microsoft.Extensions.AI" Version="9.3.0-preview.1.25114.11" />
     <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="9.3.0-preview.1.25114.11" />
-    <PackageReference Include="Microsoft.SemanticKernel.Abstractions" Version="1.38.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Abstractions" Version="1.40.1" />
     <PackageReference Include="PolySharp" Version="1.15.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

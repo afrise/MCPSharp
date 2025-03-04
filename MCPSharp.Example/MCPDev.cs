@@ -3,14 +3,24 @@
     ///<summary>testing interface for custom .net mcp server</summary>
     public class MCPDev()
     {
+        /// <summary>
+        /// example of a simple resource that returns a string
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         [McpResource("name", "test://{name}")]
-        public string Name(string name) => $"hello {name}";
+        public static string Name(string name) => $"hello {name}";
 
-
+        /// <summary>
+        /// example of a simple resource that returns a string
+        /// </summary>
         [McpResource("settings", "test://settings", "string", "the settings document")]
         public string Settings { get; set; } = "settings";
 
-
+        /// <summary>
+        /// example of a function that attempts to write to console - to ensure this does not break the stream
+        /// </summary>
+        /// <param name="message"></param>
         [McpTool("write-to-console", "write a string to the console")] 
         public static void WriteToConsole(string message) => Console.WriteLine(message);
 
@@ -43,7 +53,9 @@
         /// </summary>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
+#pragma warning disable CS0618 // Type or member is obsolete
         [McpFunction("throw_exception")] //leaving this one as [McpFunction] for testing purposes
+#pragma warning restore CS0618 // Type or member is obsolete
         public static string Exception() => throw new Exception("This is an exception");
     }
 }

@@ -1,6 +1,7 @@
 ﻿using MCPSharp.Core.Tools;
 using MCPSharp.Core.Transport;
 using MCPSharp.Model;
+using Microsoft.Extensions.AI;
 using Microsoft.VisualStudio.Threading;
 using StreamJsonRpc;
 using System.Reflection;
@@ -14,7 +15,6 @@ namespace MCPSharp
     {
         private static readonly MCPServer _instance = new();
         private readonly JsonRpc _rpc;
-        private readonly Stream StandardOutput;
 
         private readonly ToolManager _toolManager = new()
         {
@@ -23,7 +23,6 @@ namespace MCPSharp
         };
 
         private readonly ResourceManager _resouceManager = new();
-
         private readonly ServerRpcTarget _target;
         private readonly CancellationTokenSource _cancellationTokenSource = new();
 
@@ -70,14 +69,46 @@ namespace MCPSharp
         /// </summary>
         /// <typeparam name="T"></typeparam>
         [Obsolete("Call Register<T> instead. The method has been renamed to clear any confusion. They are functionally identical")]
-        public static void RegisterTool<T>() where T : class, new() => _instance._toolManager.Register<T>();
+        public static void RegisterTool<T>() where T : class, new() => _=_instance.RegisterAsync<T>();
 
         /// <summary>
         /// Registers a tool with the server.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        public static void Register<T>() where T : class, new()=>_ = _instance.RegisterAsync<T>();
-        public async Task RegisterAsync<T>() where T : class, new() { _toolManager.Register<T>(); _resouceManager.Register<T>(); }
+        /// <typeparam name="T">The class containing the member methods you wish to expose</typeparam>
+        public static void Register<T>() where T : class, new()=> _=_instance.RegisterAsync<T>();
+
+        /// <summary>
+        /// Registers a tool with the server.
+        /// </summary>
+        /// <typeparam name="T">The class containing the member methods you wish to expose</typeparam>
+        /// <returns></returns>
+        public async Task RegisterAsync<T>() where T : class, new() 
+        { 
+            await Task.Run(() =>
+            {
+                _toolManager.Register<T>();
+                _resouceManager.Register<T>();
+            });
+        }
+
+        /// <summary>
+        /// Registers a tool with the server.
+        /// </summary>
+        /// <param name="function"></param>
+        public static void RegisterAIFunction(AIFunction function) => _ = _instance.RegisterAsync(function);
+
+        /// <summary>
+        /// Registers a tool with the server.
+        /// </summary>
+        /// <param name="function"></param>
+        /// <returns></returns>
+        public async Task RegisterAsync(AIFunction function) => await _toolManager.RegisterAIFunctionAsync(function);
+
+        /// <summary>
+        /// Register a Delegate function along with tool definition
+        /// </summary>
+        /// <param name="tool">the Tool object describing the tool and it's parameters</param>
+        /// <param name="func">the Function you wish to handle the tool</param>
         public static void AddToolHandler(Tool tool, Delegate func) => _instance._toolManager.AddToolHandler(new ToolHandler(tool, func.Method));
 
         /// <summary>
@@ -100,7 +131,9 @@ namespace MCPSharp
                 .Where(t =>
                 {
                     bool classHasToolAttribute = t.GetCustomAttribute<McpToolAttribute>() != null;
+#pragma warning disable CS0618 // We need this here for compatibility with older versions of the library
                     bool methodHasToolAttribute = t.GetMethods().Any(m => m.GetCustomAttribute<McpFunctionAttribute>() != null);
+#pragma warning restore CS0618 // (Type or member is obsolete)
                     bool methodHasResourceAttribute = t.GetMethods().Any(m => m.GetCustomAttribute<McpResourceAttribute>() != null);
 
                     return classHasToolAttribute || methodHasToolAttribute || methodHasResourceAttribute;
@@ -108,7 +141,7 @@ namespace MCPSharp
 
             foreach (var toolType in allTypes)
             {
-                var registerMethod = typeof(MCPServer).GetMethod(nameof(ToolManager.Register))?.MakeGenericMethod(toolType);
+                var registerMethod = typeof(MCPServer).GetMethod(nameof(Register))?.MakeGenericMethod(toolType);
                 registerMethod?.Invoke(_instance, null);
             }
 

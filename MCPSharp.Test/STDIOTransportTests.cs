@@ -63,6 +63,24 @@ namespace MCPSharp.Test
             Assert.AreEqual("this is a test of the echo function", response);
         }
 
+        [TestCategory("Tools")]
+        [TestMethod("Tools/Call with AIFunction")]
+        public async Task TestCallToolWithAIFunction()
+        {
+            var result = await client.CallToolAsync("AI_Function");
+            string response = result.Content[0].Text;
+            Assert.AreEqual("ahoyhoy!", response);
+        }
+
+        [TestCategory("Tools")]
+        [TestMethod("Tools/Call with AIFunction with parameters")]
+        public async Task TestCallToolWithAIFunctionWithParameters()
+        {
+            var result = await client.CallToolAsync("to_upper", new Dictionary<string, object> { { "input", "this is a test of the to_upper function" } });
+            string response = result.Content[0].Text;
+            Assert.AreEqual("this is a test of the to_upper function".ToUpperInvariant(), response);
+        }
+
         [TestCategory("Misc")]
         [TestMethod("Exception Handling")]
         public async Task TestException()
