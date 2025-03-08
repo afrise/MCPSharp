@@ -9,11 +9,11 @@
         /// The text of the message
         /// </summary>
         public string Text { get; set; } = text;
-
         /// <summary>
         /// The type of the content. This is always "text"
         /// </summary>
-        public const string Type = "text";
+        public string Type { get; } = "text";
+
     }
 }
 

@@ -32,7 +32,9 @@ namespace MCPSharp.Test
         {
             var result = await client.CallToolAsync("Hello");
             string response = result.Content[0].Text;
+
             Assert.AreEqual("hello, claude.", response);
+            Assert.AreEqual("text", result.Content[0].Type);
         }
 
         [TestCategory("Tools")]
@@ -42,6 +44,8 @@ namespace MCPSharp.Test
             var result = await client.CallToolAsync("dynamicTool", new Dictionary<string, object> { { "input", "test string" }, { "input2", "another string" } });
             string response = result.Content[0].Text;
             Assert.AreEqual("hello, test string.\nanother string", response);
+            Assert.AreEqual("text", result.Content[0].Type);
+
         }
 
         [TestCategory("Tools")]
@@ -51,6 +55,8 @@ namespace MCPSharp.Test
             var result = await client.CallToolAsync("SemanticTest");
             string response = result.Content[0].Text;
             Assert.AreEqual("success", response);
+            Assert.AreEqual("text", result.Content[0].Type);
+
         }
 
         [TestCategory("Tools")]
@@ -61,6 +67,8 @@ namespace MCPSharp.Test
             Assert.IsFalse(result.IsError);
             string response = result.Content[0].Text;
             Assert.AreEqual("this is a test of the echo function", response);
+            Assert.AreEqual("text", result.Content[0].Type);
+
         }
 
         [TestCategory("Misc")]
@@ -70,6 +78,8 @@ namespace MCPSharp.Test
             var result = await client.CallToolAsync("throw_exception");
             string response = result.Content[0].Text;
             Assert.AreEqual("This is an exception", response);
+            Assert.AreEqual("text", result.Content[0].Type);
+
         }
 
         [TestCategory("Tools")]
@@ -94,6 +104,8 @@ namespace MCPSharp.Test
             var result = await client.CallToolAsync("dll-tool");
             string response = result.Content[0].Text;
             Assert.AreEqual("success", response);
+            Assert.AreEqual("text", result.Content[0].Type);
+
         }
 
 
@@ -131,6 +143,8 @@ namespace MCPSharp.Test
             var result = await client.CallToolAsync("AddComplex", new Dictionary<string, object> { { "obj", new ComplicatedObject { Name = "Claude", Age = 25, Hobbies = ["Programming", "Gaming"] } } });
             string response = result.Content[0].Text;
             Assert.AreEqual("Name: Claude, Age: 25, Hobbies: Programming, Gaming", response);
-        }   
+            Assert.AreEqual("text", result.Content[0].Type);
+
+        }
     }
 }

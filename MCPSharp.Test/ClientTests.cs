@@ -44,6 +44,8 @@ namespace MCPSharp.Test
 
             string response = result.Content[0].Text;
             Assert.AreEqual("Echo: test", response);
+            Assert.AreEqual("text", result.Content[0].Type);
+
         }
 
         [TestCategory("Prompts")]
