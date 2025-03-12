@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\MCPSharp.Example\MCPSharp.Example.csproj" />
     <ProjectReference Include="..\MCPSharp\MCPSharp.csproj" />
   </ItemGroup>
 

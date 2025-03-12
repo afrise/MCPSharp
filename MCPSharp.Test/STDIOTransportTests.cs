@@ -1,4 +1,6 @@
 ﻿using MCPSharp.Example;
+using MCPSharp.Model.Results;
+using Microsoft.SemanticKernel;
 
 namespace MCPSharp.Test
 {
@@ -114,6 +116,30 @@ namespace MCPSharp.Test
             Assert.AreEqual("success", response);
         }
 
+        [TestCategory("Tools")]
+        [TestMethod("Tools/Call from SemanticKernel")]
+        public async Task TestCallToolFromSemanticKernel()
+        {
+           
+
+            var builder = Kernel.CreateBuilder();
+#pragma warning disable SKEXP0070
+            builder.AddOllamaChatCompletion("llama3.2:latest", new Uri("http://192.168.0.134:11434"));
+#pragma warning restore SKEXP0070 
+
+            builder.Plugins.Add(await client.GetKernelPluginAsync());
+
+            Kernel kernel = builder.Build();
+
+            var plugin =  kernel.Plugins.First();
+            var function = plugin.First(f => f.Name == "Echo");
+            
+            var response = await kernel.InvokeAsync(function, new KernelArguments { { "input", new Dictionary<string, object> { { "input", "test string" } } } });
+
+            CallToolResult result = response.GetValue<CallToolResult>()!;
+
+            Assert.AreEqual("test string", result.Content[0].Text);
+        }
 
         [TestCategory("Prompts")]
         [TestMethod("Prompts/List")]
