@@ -142,12 +142,11 @@ namespace MCPSharp
                 .Where(t =>
                 {
                     bool classHasToolAttribute = t.GetCustomAttribute<McpToolAttribute>() != null;
-#pragma warning disable CS0618 // We need this here for compatibility with older versions of the library
-                    bool methodHasToolAttribute = t.GetMethods().Any(m => m.GetCustomAttribute<McpFunctionAttribute>() != null);
-#pragma warning restore CS0618 // (Type or member is obsolete)
+                    bool methodHasToolAttribute = t.GetMethods().Any(m => m.GetCustomAttribute<McpToolAttribute>() != null);
+                    bool methodHasFunctionAttribute = t.GetMethods().Any(m => m.GetCustomAttribute<McpFunctionAttribute>() != null);
                     bool methodHasResourceAttribute = t.GetMethods().Any(m => m.GetCustomAttribute<McpResourceAttribute>() != null);
 
-                    return classHasToolAttribute || methodHasToolAttribute || methodHasResourceAttribute;
+                    return classHasToolAttribute || methodHasToolAttribute || methodHasFunctionAttribute || methodHasResourceAttribute;
                 });
 
             foreach (var toolType in allTypes)

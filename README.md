@@ -179,7 +179,6 @@ MCPSharp automatically extracts documentation from XML comments:
 /// <summary>
 /// Provides mathematical operations
 /// </summary>
-[McpTool("calculator")]
 public class Calculator
 {
     /// <summary>
