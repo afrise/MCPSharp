@@ -95,19 +95,6 @@ MCPServer.AddToolHandler(new Tool()
 }, (string input) => { return $"You provided: {input}"; });
 ```
 
-### Resources API
-
-Define and expose resources:
-
-```csharp
-[McpResource("settings", "resource://settings", "application/json", "Application settings")]
-public string Settings { get; set; } = "{ \"theme\": \"dark\" }";
-
-// Or as a method
-[McpResource("user", "resource://{name}", "text/plain", "User information")]
-public string GetUser(string name) => $"Information about {name}";
-```
-
 ### Use with Microsoft.Extensions.AI
 
 ```csharp
