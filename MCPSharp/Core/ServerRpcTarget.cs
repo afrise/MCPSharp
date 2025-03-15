@@ -1,10 +1,13 @@
-﻿using MCPSharp.Core.Tools;
+﻿using MCPSharp.Core;
+using MCPSharp.Core.Tools;
 using MCPSharp.Model;
 using MCPSharp.Model.Capabilities;
 using MCPSharp.Model.Parameters;
 using MCPSharp.Model.Results;
+using MessagePack;
 using Microsoft.Extensions.Logging;
 using StreamJsonRpc;
+using System.Text.Json;
 
 namespace MCPSharp
 {
@@ -22,15 +25,19 @@ namespace MCPSharp
         /// <param name="clientInfo">The client information.</param>
         /// <returns>The result of the initialization process.</returns>
         [JsonRpcMethod("initialize")]
-        public async Task<InitializeResult> InitializeAsync(string protocolVersion, ClientCapabilities capabilities, Implementation clientInfo)
+        public async Task<InitializeResult> InitializeAsync(string protocolVersion, object capabilities, Implementation clientInfo)
         {
-            _clientInfo = clientInfo ?? new();
-            _clientCapabilities = capabilities ?? new();
-
-            if (_clientCapabilities.Tools.TryGetValue("listChanged", out bool value))
+            if (capabilities is ClientCapabilities cc)
             {
-                MCPServer.EnableToolChangeNotification = value;
+                _clientCapabilities = cc;
             }
+
+            _clientInfo = clientInfo ?? new();
+
+            //if (_clientCapabilities.Tools.TryGetValue("listChanged", out bool value))
+            //{
+            //    MCPServer.EnableToolChangeNotification = value;
+           // }
             
             // Set client as connected when initialized
             McpServerLogger.SetClientConnected(true);
@@ -58,11 +65,26 @@ namespace MCPSharp
         [JsonRpcMethod("resources/list")]
         public async Task<ResourcesListResult> ListResourcesAsync() => await Task.Run(() => 
         {
-            _logger.LogInformation("resources/list");
+            //_logger.LogInformation("resources/list");
             return new ResourcesListResult() { Resources = resourceManager.Resources };
-        }
-        );
+        });
+        
+        [JsonRpcMethod("resources/read")]
+        public async Task<ResourceReadResultContainer> ReadResourcesAsync(string uri) 
+        {
+            var res = resourceManager.Resources.First(r => r.Uri == uri);
 
+
+            return new ResourceReadResultContainer() {
+                Contents = [new ResourceReadResult(){
+                    Uri = uri,
+                    Text = (string)res.Method.Invoke(res.Instance, null),
+                    MimeType = "text/plain"
+                }]
+            };
+            
+
+        }
         /// <summary>
         /// Lists the resource templates available on the server.
         /// </summary>
@@ -97,7 +119,7 @@ namespace MCPSharp
         }
 
         [JsonRpcMethod("logging/setLevel")]
-        public async Task SetLogLevelAsync(string level)
+        public static async Task SetLogLevelAsync(string level)
         {
             await Task.Run(() => {
                 //set the logger level

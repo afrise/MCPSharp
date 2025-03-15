@@ -35,7 +35,7 @@ while (true)
     chatHistory.Add(new ChatMessage(ChatRole.User, input));
     var response = await chatClient.GetResponseAsync(chatHistory, chatOptions);
     Console.WriteLine($"\n\n[Assistant] {DateTime.Now.ToShortTimeString()}: {response}");
-    chatHistory.Add(response.Message);
+    chatHistory.AddRange(response.Messages);
 }
 
 class McpServerConfiguration

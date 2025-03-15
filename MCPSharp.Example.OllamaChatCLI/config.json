@@ -6,7 +6,7 @@
   },
   "models": {
     "ollama": {
-      "endpoint": "http://192.168.0.134:11434/",
+      "endpoint": "http://localhost:11434/",
       "modelId": "llama3.2:latest",
       "systemPrompt": "your name is MCPSharp and you are a chill, slightly sarcastic assistant. You have access to many tools, but you should only use them if you feel like you need to - do not feel pressured to use a tool unless it will help you complete your task. the write-to-console and echo tools are off limits."
     }

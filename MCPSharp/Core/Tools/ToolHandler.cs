@@ -11,7 +11,8 @@ namespace MCPSharp.Core.Tools
     /// </summary>
     /// <param name="tool">The Tool object holds the description of the Tool and it's parameters</param>
     /// <param name="method">The Attributes and metadata of a method, needed to invoke it.</param>
-    public class ToolHandler(Tool tool, MethodInfo method)
+    /// <param name="instance">The instance of the object that contains the method to be invoked.</param>
+    public class ToolHandler(Tool tool, MethodInfo method, object instance = null)
     {
         /// <summary>
         /// The Tool object holds the description of the Tool and it's parameters
@@ -19,6 +20,8 @@ namespace MCPSharp.Core.Tools
         public Tool Tool = tool;
         
         private readonly MethodInfo _method = method;
+
+        private readonly object _instance = instance ?? Activator.CreateInstance(method.DeclaringType);
 
         /// <summary>
         /// Handles the invocation of a tool with the specified parameters.
@@ -53,7 +56,7 @@ namespace MCPSharp.Core.Tools
                     return new CallToolResult { IsError = true, Content = [new TextContent("Operation was cancelled")] };
                 }
 
-                var result = _method.Invoke(Activator.CreateInstance(_method.DeclaringType),[.. inputValues.Values]);
+                var result = _method.Invoke(_instance, [.. inputValues.Values]);
 
 
                 if (cancellationToken.IsCancellationRequested)

@@ -6,16 +6,18 @@
         /// <summary>
         /// example of a simple resource that returns a string
         /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        [McpResource("name", "test://{name}")]
-        public static string Name(string name) => $"hello {name}";
+        [McpResource("settings", "test://settings", "text/plain", "the settings document")]
+        public string Settings { get; set; } = "settings";
 
         /// <summary>
-        /// example of a simple resource that returns a string
+        /// example of a function that changes the value of the settings resource
         /// </summary>
-        [McpResource("settings", "test://settings", "string", "the settings document")]
-        public string Settings { get; set; } = "settings";
+        /// <param name="value"></param>
+        [McpTool("change_setings", "change the value of the settings resource")]
+        public bool ChangeSettings(string value) {
+            Settings = value;
+            return true;
+        }
 
         /// <summary>
         /// example of a function that attempts to write to console - to ensure this does not break the stream

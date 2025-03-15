@@ -1,5 +1,6 @@
 ﻿#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
+using System.Reflection;
 using System.Text.Json.Serialization;
 
 namespace MCPSharp
@@ -17,9 +18,18 @@ namespace MCPSharp
         [JsonPropertyName("uri")]
         public string Uri { get; set; }
         [JsonPropertyName("description")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string Description { get; set; }
+
         [JsonPropertyName("mimeType")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string MimeType { get; set; }
+
+
+        [JsonIgnore]
+        public MethodInfo Method { get; set; }
+        [JsonIgnore]
+        public object Instance { get; set; }
     }
 
     public class ResourceTemplateListResult
