@@ -20,10 +20,16 @@ namespace MCPSharp
         /// <param name="clientInfo">The client information.</param>
         /// <returns>The result of the initialization process.</returns>
         [JsonRpcMethod("initialize")]
-        public async Task<InitializeResult> InitializeAsync(string protocolVersion, ClientCapabilities capabilities, Implementation clientInfo)
+        public async Task<InitializeResult> InitializeAsync(string protocolVersion, object capabilities, Implementation clientInfo)
         {
+             
+            if (capabilities is ClientCapabilities cc)
+            {
+                _clientCapabilities = cc;
+            }
+            
             _clientInfo = clientInfo ?? new();
-            _clientCapabilities = capabilities ?? new();
+           
 
             if (_clientCapabilities.Tools.TryGetValue("listChanged", out object value))
             {
