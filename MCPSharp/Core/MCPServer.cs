@@ -1,9 +1,13 @@
-﻿using MCPSharp.Core.Tools;
+﻿using MCPSharp.Core;
+using MCPSharp.Core.Tools;
 using MCPSharp.Core.Transport;
 using MCPSharp.Model;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.Threading;
 using StreamJsonRpc;
 using System.Reflection;
+using System.Text.Json;
 
 namespace MCPSharp
 {
@@ -14,17 +18,17 @@ namespace MCPSharp
     {
         private static readonly MCPServer _instance = new();
         private readonly JsonRpc _rpc;
-        private readonly Stream StandardOutput;
-
+        private readonly ILogger _logger;
         private readonly ToolManager _toolManager = new()
         {
-            ToolChangeNotification = () => { if (EnableToolChangeNotification) 
-                    _= _instance._rpc.InvokeWithParameterObjectAsync("notifications/tools/list_changed", null);}
+            ToolChangeNotification = () => { 
+                if (EnableToolChangeNotification) 
+                    _= _instance._rpc.NotifyWithParameterObjectAsync("notifications/tools/list_changed", null);
+            }
         };
 
         private readonly ResourceManager _resouceManager = new();
-
-        private readonly ServerRpcTarget _target;
+        //private readonly ServerRpcTarget _target;
         private readonly CancellationTokenSource _cancellationTokenSource = new();
 
         /// <summary>
@@ -53,16 +57,21 @@ namespace MCPSharp
         private MCPServer()
         {
             Implementation = new();
-            _target = new(_toolManager, _resouceManager, Implementation); 
+
             Console.SetOut(RedirectedOutput);
+            
             _rpc = new JsonRpc(new NewLineDelimitedMessageHandler(new StdioTransportPipe(), 
                 new SystemTextJsonFormatter() { 
-                    JsonSerializerOptions = new System.Text.Json.JsonSerializerOptions { 
+                    JsonSerializerOptions = new JsonSerializerOptions { 
                         PropertyNameCaseInsensitive = true, 
-                        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase 
-                    } }), _target);
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase 
+                    } }));
+            
+            _logger = new McpServerLogger(_rpc);
 
+            _rpc.AddLocalRpcTarget(new ServerRpcTarget(_toolManager, _resouceManager, Implementation, _logger));
             _rpc.StartListening();
+
         }
 
         /// <summary>
@@ -70,15 +79,44 @@ namespace MCPSharp
         /// </summary>
         /// <typeparam name="T"></typeparam>
         [Obsolete("Call Register<T> instead. The method has been renamed to clear any confusion. They are functionally identical")]
-        public static void RegisterTool<T>() where T : class, new() => _instance._toolManager.Register<T>();
+        public static void RegisterTool<T>() where T : class, new() => _=_instance.RegisterAsync<T>();
 
         /// <summary>
         /// Registers a tool with the server.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        public static void Register<T>() where T : class, new()=>_ = _instance.RegisterAsync<T>();
-        public async Task RegisterAsync<T>() where T : class, new() { _toolManager.Register<T>(); _resouceManager.Register<T>(); }
-        public static void AddToolHandler(Tool tool, Delegate func) => _instance._toolManager.AddToolHandler(new ToolHandler(tool, func.Method));
+        /// <typeparam name="T">The class containing the member methods you wish to expose</typeparam>
+        public static void Register<T>() where T : class, new()=> _=_instance.RegisterAsync<T>();
+
+        /// <summary>
+        /// Registers a tool with the server.
+        /// </summary>
+        /// <typeparam name="T">The class containing the member methods you wish to expose</typeparam>
+        /// <returns></returns>
+        public async Task RegisterAsync<T>() where T : class, new() 
+        {
+            var instance = new T(); 
+
+            await Task.Run(() =>
+            {
+                _logger.LogInformation("Registering {TypeName}", typeof(T).Name);
+                _toolManager.Register(instance);
+                _resouceManager.Register(instance);
+            });
+        }
+
+        /// <summary>
+        /// Registers a tool with the server.
+        /// </summary>
+        /// <param name="function"></param>
+        public static void RegisterAIFunction(AIFunction function) => _ = _instance._toolManager.RegisterAIFunctionAsync(function);
+
+        /// <summary>
+        /// Register a Delegate function along with tool definition
+        /// </summary>
+        /// <param name="tool">the Tool object describing the tool and it's parameters</param>
+        /// <param name="func">the Function you wish to handle the tool</param>
+        public static void AddToolHandler(Tool tool, Delegate func) => 
+            _instance._toolManager.AddToolHandler(new ToolHandler(tool, func.Method));
 
         /// <summary>
         /// forward Console.WriteLine() to a TextWriter
@@ -109,7 +147,7 @@ namespace MCPSharp
 
             foreach (var toolType in allTypes)
             {
-                var registerMethod = typeof(MCPServer).GetMethod(nameof(ToolManager.Register))?.MakeGenericMethod(toolType);
+                var registerMethod = typeof(MCPServer).GetMethod(nameof(Register))?.MakeGenericMethod(toolType);
                 registerMethod?.Invoke(_instance, null);
             }
 
@@ -146,6 +184,11 @@ namespace MCPSharp
         {
             _cancellationTokenSource.Cancel();
             _rpc.Dispose();
+        }
+
+        internal static void HandleClientDisconnected()
+        {
+            _instance?.Dispose();
         }
     }
 }

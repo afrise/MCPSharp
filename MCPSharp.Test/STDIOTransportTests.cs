@@ -1,4 +1,6 @@
 ﻿using MCPSharp.Example;
+using MCPSharp.Model.Results;
+using Microsoft.SemanticKernel;
 
 namespace MCPSharp.Test
 {
@@ -71,6 +73,24 @@ namespace MCPSharp.Test
 
         }
 
+        [TestCategory("Tools")]
+        [TestMethod("Tools/Call with AIFunction")]
+        public async Task TestCallToolWithAIFunction()
+        {
+            var result = await client.CallToolAsync("AI_Function");
+            string response = result.Content[0].Text;
+            Assert.AreEqual("ahoyhoy!", response);
+        }
+
+        [TestCategory("Tools")]
+        [TestMethod("Tools/Call with AIFunction with parameters")]
+        public async Task TestCallToolWithAIFunctionWithParameters()
+        {
+            var result = await client.CallToolAsync("to_upper", new Dictionary<string, object> { { "input", "this is a test of the to_upper function" } });
+            string response = result.Content[0].Text;
+            Assert.AreEqual("this is a test of the to_upper function".ToUpperInvariant(), response);
+        }
+
         [TestCategory("Misc")]
         [TestMethod("Exception Handling")]
         public async Task TestException()
@@ -108,13 +128,37 @@ namespace MCPSharp.Test
 
         }
 
+        [TestCategory("Tools")]
+        [TestMethod("Tools/Call from SemanticKernel")]
+        public async Task TestCallToolFromSemanticKernel()
+        {
+           
+
+            var builder = Kernel.CreateBuilder();
+#pragma warning disable SKEXP0070
+            builder.AddOllamaChatCompletion("llama3.2:latest", new Uri("http://192.168.0.134:11434"));
+#pragma warning restore SKEXP0070 
+
+            builder.Plugins.Add(await client.GetKernelPluginAsync());
+
+            Kernel kernel = builder.Build();
+
+            var plugin =  kernel.Plugins.First();
+            var function = plugin.First(f => f.Name == "Echo");
+            
+            var response = await kernel.InvokeAsync(function, new KernelArguments { { "input", new Dictionary<string, object> { { "input", "test string" } } } });
+
+            CallToolResult result = response.GetValue<CallToolResult>()!;
+
+            Assert.AreEqual("test string", result.Content[0].Text);
+        }
 
         [TestCategory("Prompts")]
         [TestMethod("Prompts/List")]
         public async Task TestListPrompts()
         {
             var result = await client.GetPromptListAsync();
-            Assert.IsFalse(result.Prompts.Count != 0);
+            Assert.AreEqual(0, result.Prompts.Count);
         }
 
         [TestCategory("Misc")]
@@ -129,11 +173,19 @@ namespace MCPSharp.Test
         public async Task TestResources()
         {
             var result = await client.GetResourcesAsync(); 
-            Assert.IsTrue(result.Resources.Count != 0);
+            Assert.AreNotEqual(0, result.Resources.Count);
             result.Resources.ForEach(result =>
             {
                 Console.WriteLine(result.Name);
             });
+        }
+
+        [TestCategory("Resources")]
+        [TestMethod("Resources/read")]
+        public async Task TestReadResource()
+        {
+            var result = await client.GetResourceAsync("test://settings");
+            Assert.AreEqual("settings", result.Contents[0].Text);
         }
 
         [TestCategory("Tools")]

@@ -30,5 +30,10 @@ namespace MCPSharp.Model.Capabilities
         /// A dictionary of root capabilities that the server supports.
         /// </summary>
         public Dictionary<string, bool> Roots { get; set; } = [];
+
+        /// <summary>
+        /// A dictionary of logging capabilities that the server supports.
+        /// </summary>
+        public Dictionary<string, bool> logging { get; set; } = [];
     }
 }

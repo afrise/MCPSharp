@@ -3,12 +3,14 @@ using MCPSharp.Model;
 using MCPSharp.Model.Parameters;
 using MCPSharp.Model.Results;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using StreamJsonRpc;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace MCPSharp
 {
-
     /// <summary>
     /// MCPSharp Model Context Protocol Client.
     /// </summary>
@@ -23,6 +25,7 @@ namespace MCPSharp
         private readonly string _version;
         private readonly Process _process;
         private readonly JsonRpc _rpc;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Gets a value indicating whether the client has been initialized.
@@ -40,7 +43,7 @@ namespace MCPSharp
         /// <param name="name">The name of the client.</param>
         /// <param name="version">The version of the client.</param>
         /// <param name="server">The path to the executable server.</param>
-        /// <param name="env">Dictionary containing enviroment variables
+        /// <param name="env">Dictionary containing enviroment variables</param>
         /// <param name="args">Additional arguments for the server.</param>
         public MCPClient(string name, string version, string server, string args = null, IDictionary<string, string> env =null)
         {
@@ -106,9 +109,37 @@ namespace MCPSharp
         /// </summary>
         /// <returns></returns>
         [JsonRpcMethod("notifications/tools/list_changed")]
-        public async Task ToolsListChangedAsync() => await GetToolsAsync();
+        public async Task ToolsListChangedAsync() => _ = await GetToolsAsync();
 
+        /// <summary>
+        /// recieve and log a message from the server
+        /// </summary>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        [JsonRpcMethod("notifications/message")]
+        public static async Task MessageAsync(Dictionary<string, object> parameters)
+        {
+            LogLevel logLevel = parameters["level"].ToString() switch
+            {
+                "trace" => LogLevel.Trace,
+                "debug" => LogLevel.Debug,
+                "information" => LogLevel.Information,
+                "warning" => LogLevel.Warning,
+                "error" => LogLevel.Error,
+                "critical" => LogLevel.Critical,
+                _ => LogLevel.None
+            };
 
+            await Task.FromResult(logLevel);
+
+            //Dictionary<string, object> data = parameters["data"] as Dictionary<string, object>;
+            //var errorMesage = data["error"].ToString();
+            //var details = data["details"] as Dictionary<string, string>;
+            //_logger.Log(logLevel, errorMesage, details);
+
+            Console.WriteLine("Message Logged");
+            
+        }
 
         /// <summary>
         /// Expose tools as Microsoft.Extensions.AI AIFunctions
@@ -129,7 +160,49 @@ namespace MCPSharp
             return functions;
         }
 
+       
+        /// <summary>
+        /// Gets a semantic kernel plugin from the MCP server. This is a collection of Semantic Kernel Functions
+        /// </summary>
+        /// <returns></returns>
+        
+        public async Task<KernelPlugin> GetKernelPluginAsync() 
+        {
+            var regex = new Regex("[^a-zA-Z0-9]");
+            List<KernelFunction> functions = [];
 
+            await GetToolsAsync();
+            // convert tools into kernel plugins
+            foreach (var tool in Tools)
+            {
+                List<KernelParameterMetadata> parameters = [];
+
+                foreach (var parameter in tool.InputSchema.Properties)
+                {
+                    parameters.Add(new(parameter.Key) { 
+                        Name = parameter.Key,
+                        Description = parameter.Value.Description,
+                        IsRequired = parameter.Value.Required,
+                        ParameterType = Type.GetType(parameter.Value.Type) ?? Type.GetType("System.Object")
+                    });
+                }
+
+                functions.Add(KernelFunctionFactory.CreateFromMethod(
+                    async (Dictionary<string, object> input) => {
+                        var result = await CallToolAsync(tool.Name, input);
+                        return result;
+                    }, 
+                    new KernelFunctionFromMethodOptions { 
+                        FunctionName = regex.Replace(tool.Name, "_"),  
+                        Description = tool.Description, 
+                        Parameters = parameters })); 
+            }
+
+           
+         
+            return KernelPluginFactory.CreateFromFunctions(regex.Replace(_name, "_"), functions); 
+        }
+      
         /// <summary>
         /// Gets a list of tools from the MCP server.
         /// </summary>
@@ -159,6 +232,12 @@ namespace MCPSharp
                 "tools/call", new ToolCallParameters { Arguments = parameters, Name = name });
         }
         
+        public async Task<ResourceReadResultContainer> GetResourceAsync(string uri)
+        {
+
+           return await _rpc.InvokeAsync<ResourceReadResultContainer>("resources/read", uri);
+           
+        }
 
         /// <summary>
         /// Calls a tool with the given name.
