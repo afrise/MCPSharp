@@ -31,6 +31,7 @@ MCPServer.AddToolHandler( new Tool()
             {"input2", new ParameterSchema{Type="string", Description="the input2"}}
         }
     }
+    
 }, (string input, string? input2 = null) => { return $"hello, {input}.\n{input2 ?? 
     "didn't feel like filling in the second value just because it wasn't required? shame. just kidding! thanks for your help!"}"; });
 

@@ -160,10 +160,12 @@ namespace MCPSharp
             return functions;
         }
 
+       
         /// <summary>
         /// Gets a semantic kernel plugin from the MCP server. This is a collection of Semantic Kernel Functions
         /// </summary>
         /// <returns></returns>
+        
         public async Task<KernelPlugin> GetKernelPluginAsync() 
         {
             var regex = new Regex("[^a-zA-Z0-9]");
@@ -230,6 +232,12 @@ namespace MCPSharp
                 "tools/call", new ToolCallParameters { Arguments = parameters, Name = name });
         }
         
+        public async Task<ResourceReadResultContainer> GetResourceAsync(string uri)
+        {
+
+           return await _rpc.InvokeAsync<ResourceReadResultContainer>("resources/read", uri);
+           
+        }
 
         /// <summary>
         /// Calls a tool with the given name.

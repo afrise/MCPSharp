@@ -1,8 +1,6 @@
 ﻿using MCPSharp.Model;
-using MCPSharp.Model.Schemas;
 using Microsoft.Extensions.AI;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace MCPSharp
 {

@@ -17,7 +17,7 @@
         /// <summary>
         /// The description of the resource.
         /// </summary>
-        public string Description { get; set; } = description;
+        public string? Description { get; set; } = description;
         /// <summary>
         /// The URI of the resource.
         /// </summary>
@@ -25,6 +25,6 @@
         /// <summary>
         /// The MIME type of the resource.
         /// </summary>
-        public string MimeType { get; set; } = mimeType;
+        public string? MimeType { get; set; } = mimeType;
     }
 }

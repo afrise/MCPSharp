@@ -1,4 +1,5 @@
-﻿using MCPSharp.Core.Tools;
+﻿using MCPSharp.Core;
+using MCPSharp.Core.Tools;
 using MCPSharp.Core.Transport;
 using MCPSharp.Model;
 using Microsoft.Extensions.AI;
@@ -92,13 +93,14 @@ namespace MCPSharp
         /// <typeparam name="T">The class containing the member methods you wish to expose</typeparam>
         /// <returns></returns>
         public async Task RegisterAsync<T>() where T : class, new() 
-        { 
+        {
+            var instance = new T(); 
 
             await Task.Run(() =>
             {
                 _logger.LogInformation("Registering {TypeName}", typeof(T).Name);
-                _toolManager.Register<T>();
-                _resouceManager.Register<T>();
+                _toolManager.Register(instance);
+                _resouceManager.Register(instance);
             });
         }
 
@@ -106,21 +108,15 @@ namespace MCPSharp
         /// Registers a tool with the server.
         /// </summary>
         /// <param name="function"></param>
-        public static void RegisterAIFunction(AIFunction function) => _ = _instance.RegisterAsync(function);
-
-        /// <summary>
-        /// Registers a tool with the server.
-        /// </summary>
-        /// <param name="function"></param>
-        /// <returns></returns>
-        public async Task RegisterAsync(AIFunction function) => await _toolManager.RegisterAIFunctionAsync(function);
+        public static void RegisterAIFunction(AIFunction function) => _ = _instance._toolManager.RegisterAIFunctionAsync(function);
 
         /// <summary>
         /// Register a Delegate function along with tool definition
         /// </summary>
         /// <param name="tool">the Tool object describing the tool and it's parameters</param>
         /// <param name="func">the Function you wish to handle the tool</param>
-        public static void AddToolHandler(Tool tool, Delegate func) => _instance._toolManager.AddToolHandler(new ToolHandler(tool, func.Method));
+        public static void AddToolHandler(Tool tool, Delegate func) => 
+            _instance._toolManager.AddToolHandler(new ToolHandler(tool, func.Method));
 
         /// <summary>
         /// forward Console.WriteLine() to a TextWriter

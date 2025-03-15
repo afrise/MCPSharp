@@ -158,7 +158,7 @@ namespace MCPSharp.Test
         public async Task TestListPrompts()
         {
             var result = await client.GetPromptListAsync();
-            Assert.IsFalse(result.Prompts.Count != 0);
+            Assert.AreEqual(0, result.Prompts.Count);
         }
 
         [TestCategory("Misc")]
@@ -173,11 +173,19 @@ namespace MCPSharp.Test
         public async Task TestResources()
         {
             var result = await client.GetResourcesAsync(); 
-            Assert.IsTrue(result.Resources.Count != 0);
+            Assert.AreNotEqual(0, result.Resources.Count);
             result.Resources.ForEach(result =>
             {
                 Console.WriteLine(result.Name);
             });
+        }
+
+        [TestCategory("Resources")]
+        [TestMethod("Resources/read")]
+        public async Task TestReadResource()
+        {
+            var result = await client.GetResourceAsync("test://settings");
+            Assert.AreEqual("settings", result.Contents[0].Text);
         }
 
         [TestCategory("Tools")]
