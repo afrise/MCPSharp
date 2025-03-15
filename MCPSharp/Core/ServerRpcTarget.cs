@@ -25,9 +25,10 @@ namespace MCPSharp
             _clientInfo = clientInfo ?? new();
             _clientCapabilities = capabilities ?? new();
 
-            if (_clientCapabilities.Tools.TryGetValue("listChanged", out bool value))
+            if (_clientCapabilities.Tools.TryGetValue("listChanged", out object value))
             {
-                MCPServer.EnableToolChangeNotification = value;
+                if (value is bool boolValue)
+                    MCPServer.EnableToolChangeNotification = boolValue;    
             }
 
             return await Task.FromResult<InitializeResult>(
