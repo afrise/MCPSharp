@@ -12,14 +12,22 @@ namespace MCPSharp
     /// </summary>
     public class MCPServer
     {
-        private static readonly MCPServer _instance = new();
+        private static MCPServer _instance = new();
+
+        /// <summary>
+        /// Gets the current server instance.
+        /// </summary>
+        public static MCPServer Instance => _instance;
         private readonly JsonRpc _rpc;
         private readonly Stream StandardOutput;
 
         private readonly ToolManager _toolManager = new()
         {
-            ToolChangeNotification = () => { if (EnableToolChangeNotification) 
-                    _= _instance._rpc.InvokeWithParameterObjectAsync("notifications/tools/list_changed", null);}
+            ToolChangeNotification = () =>
+            {
+                if (EnableToolChangeNotification)
+                    _ = _instance._rpc.InvokeWithParameterObjectAsync("notifications/tools/list_changed", null);
+            }
         };
 
         private readonly ResourceManager _resouceManager = new();
@@ -53,14 +61,17 @@ namespace MCPSharp
         private MCPServer()
         {
             Implementation = new();
-            _target = new(_toolManager, _resouceManager, Implementation); 
+            _target = new(_toolManager, _resouceManager, Implementation);
             Console.SetOut(RedirectedOutput);
-            _rpc = new JsonRpc(new NewLineDelimitedMessageHandler(new StdioTransportPipe(), 
-                new SystemTextJsonFormatter() { 
-                    JsonSerializerOptions = new System.Text.Json.JsonSerializerOptions { 
-                        PropertyNameCaseInsensitive = true, 
-                        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase 
-                    } }), _target);
+            _rpc = new JsonRpc(new NewLineDelimitedMessageHandler(new StdioTransportPipe(),
+                new SystemTextJsonFormatter()
+                {
+                    JsonSerializerOptions = new System.Text.Json.JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true,
+                        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+                    }
+                }), _target);
 
             _rpc.StartListening();
         }
@@ -76,7 +87,7 @@ namespace MCPSharp
         /// Registers a tool with the server.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        public static void Register<T>() where T : class, new()=>_ = _instance.RegisterAsync<T>();
+        public static void Register<T>() where T : class, new() => _ = _instance.RegisterAsync<T>();
         public async Task RegisterAsync<T>() where T : class, new() { _toolManager.Register<T>(); _resouceManager.Register<T>(); }
         public static void AddToolHandler(Tool tool, Delegate func) => _instance._toolManager.AddToolHandler(new ToolHandler(tool, func.Method));
 
@@ -141,8 +152,11 @@ namespace MCPSharp
                 }
             }
         }
-        
-        internal void Dispose()
+
+        /// <summary>
+        /// Disposes the server and releases all resources.
+        /// </summary>
+        public void Dispose()
         {
             _cancellationTokenSource.Cancel();
             _rpc.Dispose();
