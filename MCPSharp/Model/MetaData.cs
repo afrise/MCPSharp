@@ -11,6 +11,6 @@ namespace MCPSharp.Model
         /// Gets or sets the progress token.
         /// </summary>
         [JsonPropertyName("progressToken")]
-        public int ProgressToken { get; set; } = 0;
+        public string ProgressToken { get; set; } = "";
     }
 }

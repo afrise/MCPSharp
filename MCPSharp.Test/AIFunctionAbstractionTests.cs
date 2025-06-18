@@ -37,7 +37,13 @@ namespace MCPSharp.Test
             var function = functions.First(f => f.Name == "Echo");
             var Schema = function.JsonSchema;
             Console.WriteLine(Schema);
-            CallToolResult result = (CallToolResult)(await function.InvokeAsync(new Dictionary<string, object?> { { "input", "hello there" } }))!;
+
+            AIFunctionArguments keyValuePairs = new()
+            {
+                { "input", "hello there" }
+            };
+
+            CallToolResult result = (CallToolResult)(await function.InvokeAsync(keyValuePairs))!;
 
             Assert.IsFalse(result.IsError);
 

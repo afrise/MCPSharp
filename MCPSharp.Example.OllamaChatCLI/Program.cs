@@ -26,18 +26,19 @@ var chatOptions = new ChatOptions {
     Tools = clients.GetAllAIFunctions(),
     ToolMode = ChatToolMode.Auto //let the assistant choose not to use a tool if it doesn't need to
 };
-var chatHistory = new List<ChatMessage>() { new(ChatRole.System, conf.Models["ollama"].SystemPrompt) }; 
-var chatClient = new OllamaChatClient(conf.Models["ollama"].Endpoint, conf.Models["ollama"].ModelId).AsBuilder().UseFunctionInvocation().Build();
+var chatHistory = new List<ChatMessage>() { new(ChatRole.System, conf.Models["ollama"].SystemPrompt) };
+var chatClient = new OllamaSharp.OllamaApiClient(conf.Models["ollama"].Endpoint, conf.Models["ollama"].ModelId); //.AsBuilder().UseFunctionInvocation().Build();
+
 
 while (true)
 {
     Console.Write("\n\n[User] >> ");
     var input = Console.ReadLine();
     if (input == "bye") break;
-    chatHistory.Add(new ChatMessage(ChatRole.User, input));
-    var response = await chatClient.GetResponseAsync(chatHistory, chatOptions);
+    if (string.IsNullOrWhiteSpace(input)) continue;
+    var response = await chatClient.GetResponseAsync(input, chatOptions);
     Console.WriteLine($"\n\n[Assistant] {DateTime.Now.ToShortTimeString()}: {response}");
-    chatHistory.Add(response.Message);
+    chatHistory.Add(response.Messages.First());
 }
 
 class McpServerConfiguration

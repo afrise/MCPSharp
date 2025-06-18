@@ -30,6 +30,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Formats.Asn1" Version="9.0.6" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\MCPSharp.ExternalExample\MCPSharp.Example.Import.csproj" />
     <ProjectReference Include="..\MCPSharp\MCPSharp.csproj" />
   </ItemGroup>
