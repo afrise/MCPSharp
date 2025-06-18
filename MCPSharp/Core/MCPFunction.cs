@@ -48,7 +48,7 @@ namespace MCPSharp
         public override JsonElement JsonSchema => JsonSerializer.SerializeToElement(new MCPFunctionInputSchema(_tool.Name, _tool.Description, _tool.InputSchema));
 
 
-        protected override async Task<object> InvokeCoreAsync(IEnumerable<KeyValuePair<string, object>> arguments, CancellationToken cancellationToken)
+        protected override async ValueTask<object> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken)
         {
             return await _client.CallToolAsync(_tool.Name, arguments.ToDictionary(p => p.Key, p => p.Value));
         }
