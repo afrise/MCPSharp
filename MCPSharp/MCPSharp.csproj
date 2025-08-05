@@ -79,9 +79,9 @@ await client.CallToolAsync("echo", new Dictionary&lt;string, object&gt;{{"input"
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.3.0" />
-    <PackageReference Include="Microsoft.Extensions.AI" Version="9.6.0" />
-    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="9.6.0" />
-    <PackageReference Include="Microsoft.SemanticKernel.Abstractions" Version="1.57.0" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="9.7.1" />
+    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="9.7.1" />
+    <PackageReference Include="Microsoft.SemanticKernel.Abstractions" Version="1.61.0" />
     <PackageReference Include="PolySharp" Version="1.15.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -91,6 +91,7 @@ await client.CallToolAsync("echo", new Dictionary&lt;string, object&gt;{{"input"
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Formats.Asn1" Version="9.0.7" />
 	  <None Include="icon.png" Pack="true" PackagePath="\">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
