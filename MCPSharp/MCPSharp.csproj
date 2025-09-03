@@ -91,6 +91,7 @@ await client.CallToolAsync("echo", new Dictionary&lt;string, object&gt;{{"input"
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Formats.Asn1" Version="9.0.8" />
 	  <None Include="icon.png" Pack="true" PackagePath="\">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
