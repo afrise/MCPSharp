@@ -29,7 +29,9 @@ namespace MCPSharp.Core.Tools
                     }
                     else
                     {
-                        inputValues.Add(par.Name, par.ParameterType.IsValueType ? Activator.CreateInstance(par.ParameterType) : null);
+                        inputValues.Add(par.Name, par.HasDefaultValue
+                            ? par.DefaultValue
+                            : par.ParameterType.IsValueType ? Activator.CreateInstance(par.ParameterType) : null);
                     }
                 }
 
